@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import MangaForm
+from .forms import MangaForm, VariantImageFormSet
 
 @login_required
 # Link a new manga to the logged in User
@@ -164,12 +164,16 @@ def edit_variant(request, variant_id):
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
     if request.method == "POST":
         form = UserToVariantForm(request.POST, instance=variant)
-        if form.is_valid():
+        formset = VariantImageFormSet(request.POST, request.FILES, instance=variant)
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             return redirect('variant_detail', variant_id=variant.id)
     else:
         form = UserToVariantForm(instance=variant)
-    return render(request, 'edit_variant.html', {'form': form})
+        formset = VariantImageFormSet(instance=variant)
+    
+    return render(request, 'edit_variant.html', {'form': form, 'formset': formset})
 
 @login_required
 def delete_variant(request, variant_id):

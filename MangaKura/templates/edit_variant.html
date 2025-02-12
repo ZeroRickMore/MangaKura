@@ -2,12 +2,24 @@
 
 {% block content %}
     <h2>Edit Variant</h2>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
+        
+        <h3>Images</h3>
+        {{ formset.management_form }}
+        {% for form in formset %}
+            <div class="image-form">
+                {{ form.as_p }}
+                {% if form.instance.image %}
+                    <img src="{{ form.instance.image.url }}" alt="Variant Image" style="max-width: 200px;">
+                {% endif %}
+            </div>
+        {% endfor %}
+
         <button type="submit" class="btn btn-success">Save Changes</button>
     </form>
-    
+
     <div class="btn-container">
         <a href="javascript:history.back()" class="btn btn-primary">Cancel</a>
     </div>

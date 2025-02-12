@@ -6,10 +6,10 @@ from django.contrib.auth.models import User
 class UserToManga(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     manga_title = models.CharField(max_length=255)
-    animeclick_url = models.URLField()
+    animeclick_url = models.URLField(blank=True, null=True)
     owned_volumes = models.CharField(max_length=255)
     physical_position = models.CharField(max_length=255)
-    volume_doubles = models.CharField(max_length=255)
+    volume_doubles = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.manga_title} by {self.user.username}"
@@ -23,14 +23,14 @@ class UserToVariant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     variant_title = models.CharField(max_length=255)
     related_manga_title = models.CharField(max_length=255)
-    description = models.TextField()
-    stock_price = models.FloatField()
-    current_selling_price = models.FloatField()
+    description = models.TextField(blank=True, null=True)
+    stock_price = models.FloatField(blank=True, null=True)
+    current_selling_price = models.FloatField(blank=True, null=True)
     physical_position = models.CharField(max_length=255)
     number_of_owned_copies = models.IntegerField()
     copies_sold = models.JSONField(default=list)
     useful_links = models.JSONField(default=list)
-    vinted_description = models.TextField()
+    vinted_description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.variant_title

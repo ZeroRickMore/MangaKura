@@ -1,10 +1,15 @@
 from django import forms
 from .models import UserToManga
+from django.utils.html import format_html
+from django.forms import inlineformset_factory
 
 class MangaForm(forms.ModelForm):
     class Meta:
         model = UserToManga
         fields = ['manga_title', 'animeclick_url', 'owned_volumes', 'physical_position', 'volume_doubles']
+        help_texts = {
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera scaffale 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto'.replace('\n', '<br>')),
+        }
 
 
 
@@ -62,6 +67,10 @@ class UserToVariantForm(forms.ModelForm):
             'current_selling_price', 'physical_position', 'number_of_owned_copies', 
             'vinted_description'
         ]
+        help_texts = {
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera scaffale 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto'.replace('\n', '<br>')),
+        }
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,3 +100,15 @@ class UserToVariantForm(forms.ModelForm):
                 VariantImage.objects.create(variant=instance, image=image)
 
         return instance
+
+
+
+
+class VariantImageForm(forms.ModelForm):
+    class Meta:
+        model = VariantImage
+        fields = ["image"]
+
+VariantImageFormSet = inlineformset_factory(
+    UserToVariant, VariantImage, form=VariantImageForm, extra=3, can_delete=True
+)
