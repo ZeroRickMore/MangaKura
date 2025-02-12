@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Insert Variant</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Render the dynamic Copies Sold Fields -->
+    <h3>Copies Sold</h3>
+    <div id="copies_sold_form">
+      {% for copy_form in copies_sold_forms %}
+        <div class="copy_pair" data-id="{{ forloop.counter0 }}">
+          <div>{{ copy_form.as_p }}</div>
+          {% if forloop.counter0 > 0 %}
+            <button type="button" class="remove-copy">Remove</button>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="button" id="add-copy">Add Price-Amount Pair</button>
+
+    <!-- File input for multiple image uploads -->
+    <label for="id_images">Upload Images:</label>
+    <input type="file" name="images" multiple>  <!-- 'multiple' allows selecting multiple files -->
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- JavaScript for handling dynamic addition/removal -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const addButton = document.getElementById('add-copy');
+      const copiesSoldContainer = document.getElementById('copies_sold_form');
+
+      addButton.addEventListener('click', function() {
+        const copyCount = document.querySelectorAll('.copy_pair').length;
+
+        // Clone the first form and update its prefix to make it unique
+        const copyForm = document.querySelector('.copy_pair');
+        const newForm = copyForm.cloneNode(true);
+
+        // Update the field names and IDs
+        const inputs = newForm.querySelectorAll('input');
+        inputs.forEach(input => {
+          input.name = input.name.replace('__prefix__', copyCount);
+          input.id = input.id.replace('__prefix__', copyCount);
+        });
+
+        // Append the new form
+        copiesSoldContainer.appendChild(newForm);
+      });
+
+      // Delegate event to handle remove button dynamically
+      copiesSoldContainer.addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-copy')) {
+          const copyPair = event.target.closest('.copy_pair');
+          copyPair.remove();
+        }
+      });
+    });
+  </script>
+{% endblock %}

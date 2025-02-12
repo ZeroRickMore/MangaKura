@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ manga.manga_title }}</h2>
+
+    <!-- Embed AnimeClick URL in an iframe -->
+    <!-- <iframe src="{{ manga.animeclick_url }}" allowfullscreen></iframe>  -->
+
+    <ul>
+        <li><strong>AnimeClick URL:</strong> <a href="{{ manga.animeclick_url }}" target="_blank">View on AnimeClick</a></li>
+        <li><strong>Owned Volumes:</strong> {{ manga.owned_volumes }}</li>
+        <li><strong>Physical Position:</strong> {{ manga.physical_position }}</li>
+        <li><strong>Volume Doubles:</strong> {{ manga.volume_doubles }}</li>
+    </ul>
+
+    <div class="btn-container">
+        <a href="{% url 'edit_manga' manga.id %}" class="btn btn-primary">Edit</a>
+        <a href="{% url 'delete_manga' manga.id %}" class="btn btn-danger">Delete</a>
+    </div>
+{% endblock %}

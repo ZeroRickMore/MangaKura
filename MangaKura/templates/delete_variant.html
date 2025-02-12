@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Confirm Deletion</h2>
+    <p>Are you sure you want to delete "{{ variant.variant_title }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    </form>
+    <a href="{% url 'variant_detail' variant.id %}">Cancel</a>
+{% endblock %}

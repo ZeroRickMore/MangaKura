@@ -1,0 +1,354 @@
+/* General body and background */
+body {
+    background-color: #222222; /* Dark theme */
+    color: #e0e0e0; /* Much lighter gray text */
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Style for the welcome message in the nav bar */
+nav {
+    display: flex;
+    justify-content: space-between; /* Space between left and right buttons */
+    align-items: center; /* Vertically center items */
+    background-color: #121212; /* Dark background */
+    padding: 10px 20px;
+    position: relative; /* To allow absolute positioning of the welcome text */
+}
+
+/* Position the welcome message in the center of the nav */
+.welcome-message {
+    position: absolute; /* Position it in the center */
+    left: 50%;
+    transform: translateX(-50%); /* Center it horizontally */
+    color: #00e5ff; /* Light cyan color */
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Left side buttons (Home, Logout) */
+nav .left-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Right side buttons */
+nav .right-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Style for buttons (nav links) */
+nav a,
+button[type="submit"],
+button.logout-button {
+    text-decoration: none;
+    padding: 10px 20px;
+    background-color: #00b5e2; /* Cyan color */
+    color: #fff; /* White text */
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* Hover effect for buttons */
+nav a:hover,
+button[type="submit"]:hover,
+button.logout-button:hover {
+    background-color: #00a0c6; /* Darker cyan on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Ensure logout button matches the size of the other buttons */
+button.logout-button {
+    padding: 10px 20px; /* Ensuring the size */
+    font-size: 16px; /* Matching font size */
+    background-color: #00b5e2;
+    color: white;
+    border-radius: 5px;
+}
+
+/* Add some space between each button */
+nav a + a,
+button[type="submit"] + button[type="submit"],
+.logout-button + button.logout-button {
+    margin-left: 10px;
+}
+
+/* Adjustments for mobile screens (optional) */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Main content styling */
+main {
+    padding: 20px;
+}
+
+/* Headings styling */
+h1, h2, h3 {
+    color: #e0e0e0; /* Much lighter gray text */
+    text-align: center;
+}
+
+/* Form inputs and buttons */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+form input, form select, form textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #aaa; /* Much brighter border */
+    width: 500px;
+    background-color: #3a3a3a; /* Much lighter input background */
+    color: #fff; /* White text */
+    max-width: 500px;
+}
+
+form button[type="submit"] {
+    background-color: #00b5e2;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+form button[type="submit"]:hover {
+    background-color: #00a0c6;
+}
+
+/* Image preview (if applicable) */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Lists styling (for manga/variant lists) */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul li {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #3a3a3a; /* Lighter gray background */
+    border-radius: 5px;
+}
+
+ul li a {
+    text-decoration: none;
+    color: #00b5e2;
+    transition: color 0.3s ease;
+}
+
+ul li a:hover {
+    color: #00a0c6;
+}
+
+/* Empty state styling for lists (when no items) */
+ul li p {
+    color: #bbb; /* Much brighter gray for empty state */
+    text-align: center;
+}
+
+/* Back to list button */
+a.back-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #00b5e2;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+}
+
+a.back-button:hover {
+    background-color: #00a0c6;
+}
+
+/* Form Title */
+h2 {
+    font-size: 36px;
+    color: #00e5ff;
+    margin-bottom: 30px;
+}
+
+/* Confirm Deletion buttons */
+.btn-container {
+    display: flex;
+    justify-content: center; /* Center buttons horizontally */
+    gap: 20px; /* Space between the buttons */
+    margin-top: 20px;
+}
+
+.btn-container .btn-danger {
+    background-color: #e74c3c; /* Red color for "Yes, Delete" */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-container .btn-danger:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    transform: scale(1.05);
+}
+
+.btn-container .btn-secondary {
+    background-color: #7f8c8d; /* Gray color for "Cancel" */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-container .btn-secondary:hover {
+    background-color: #95a5a6; /* Lighter gray on hover */
+    transform: scale(1.05);
+}
+
+/* Primary button style */
+.btn-primary {
+    background-color: #3498db; /* Blue color */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+    transform: scale(1.05);
+}
+
+/* Center paragraph text */
+p {
+    color: #e0e0e0; /* Light gray text */
+    text-align: center; /* Center the text */
+}
+
+
+
+
+/* Search Bar Styling */
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #3a3a3a; /* Dark background */
+    padding: 5px;
+    overflow: hidden;
+    width: 335px; /* Fixed width to keep elements inside */
+    border: 1px solid #777; /* Visible border */
+}
+
+/* Keeps everything inside */
+#search-bar-horizontalizer {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between elements */
+    width: 100%; /* Keeps everything contained */
+}
+
+/* Search input takes most space */
+.search-container input {
+    border: none;
+    outline: none;
+    padding: 8px;
+    flex: 1; /* Expands to fill available space */
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border: 1px solid #777;
+    width: 500px;
+}
+
+/* Smaller select dropdown */
+.search-container select {
+    border: none;
+    outline: none;
+    padding: 4px;
+    background-color: #00b5e2;
+    color: white;
+    cursor: pointer;
+    width: 800px; /* Smaller width */
+    font-size: 12px; /* Smaller font */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #777;
+}
+
+/* **Smaller** search button */
+.search-container button {
+    border: none;
+    background-color: #00e5ff;
+    color: #121212;
+    padding: 4px 8px; /* **Smaller padding** */
+    cursor: pointer;
+    font-size: 12px; /* **Smaller font size** */
+    border: 1px solid #777;
+    height: 24px; /* Ensures it fits properly */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hover effect */
+.search-container button:hover {
+    background-color: #00a0c6;
+    transform: scale(1.05);
+}
+
+
+/* Style for the variant images */
+.variant-images {
+    display: flex;
+    gap: 10px; /* Space between images */
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Make it scrollable */
+    padding: 10px 0;
+    max-width: 100%; /* Ensure it doesn’t overflow the parent container */
+}
+
+/* Style for individual images */
+.variant-image {
+    height: 150px; /* Adjust as needed to keep them barely visible */
+    width: auto; /* Keep aspect ratio */
+    max-width: 200px; /* Limit width to a maximum of 100px */
+    object-fit: contain; /* Ensure image doesn't get distorted */
+    border-radius: 5px; /* Optional: adds rounded corners to the images */
+}
+
+/* Optional: Style the variant image when there are no images */
+.variant-images p {
+    color: #bbb;
+    font-size: 14px;
+    text-align: center;
+}

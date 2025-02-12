@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Edit Manga</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+
+    <div class="btn-container">
+        <a href="javascript:history.back()" class="btn btn-primary">Cancel</a>
+    </div>
+
+{% endblock %}

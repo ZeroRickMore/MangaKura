@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaKura</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+/* Search Bar Styling */
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #3a3a3a; /* Dark background */
+    padding: 5px;
+    overflow: hidden;
+    width: 335px; /* Fixed width to keep elements inside */
+    border: 1px solid #777; /* Visible border */
+}
+
+/* Keeps everything inside */
+#search-bar-horizontalizer {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between elements */
+    width: 100%; /* Keeps everything contained */
+}
+
+/* Search input takes most space */
+.search-container input {
+    border: none;
+    outline: none;
+    padding: 8px;
+    flex: 1; /* Expands to fill available space */
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border: 1px solid #777;
+    width: 500px;
+}
+
+/* Smaller select dropdown */
+.search-container select {
+    border: none;
+    outline: none;
+    padding: 4px;
+    background-color: #00b5e2;
+    color: white;
+    cursor: pointer;
+    width: 800px; /* Smaller width */
+    font-size: 12px; /* Smaller font */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #777;
+}
+
+/* **Smaller** search button */
+.search-container button {
+    border: none;
+    background-color: #00e5ff;
+    color: #121212;
+    padding: 4px 8px; /* **Smaller padding** */
+    cursor: pointer;
+    font-size: 12px; /* **Smaller font size** */
+    border: 1px solid #777;
+    height: 24px; /* Ensures it fits properly */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hover effect */
+.search-container button:hover {
+    background-color: #00a0c6;
+    transform: scale(1.05);
+}
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="left-buttons">
+            {% if user.is_authenticated %}
+                <a href="/">🏠</a>
+                <!-- <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">Logout</button>
+                </form> -->
+                <!-- Search Bar -->
+                <form method="get" action="{% url 'search' 'Any' %}" class="search-container">
+                    <div id="search-bar-horizontalizer">
+                        <input type="text" name="q" placeholder="Type something here..." required>
+                        <select name="category" id="search-category" onchange="updateSearchAction()">
+                            <option value="Any" selected>Any</option>
+                            <option value="Manga">Manga</option>
+                            <option value="Variant">Variant</option>
+                        </select>
+                        <button type="submit">🔍</button>
+                    </div>
+                </form>
+
+                
+            {% endif %}
+        </div>
+
+        <!-- Centered Welcome Message -->
+        {% if user.is_authenticated %}
+        <div class="welcome-message">
+            Hi, {{ user.username }} 😄
+        </div>
+        {% endif %}
+
+        <div class="right-buttons">
+            {% if user.is_authenticated %}
+                <a href="/insertManga">Add Manga 📖</a>
+                <a href="/insertVariant">Add Variant 💰</a>
+                <a href="/viewManga">Your Mangas 📦</a>
+                <a href="/viewVariant">Your Variants 💯</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        function updateSearchAction() {
+            let category = document.getElementById("search-category").value;
+            let form = document.querySelector(".search-container");
+            form.action = `/search/${category}`;
+        }
+    </script>
+
+</body>
+</html>

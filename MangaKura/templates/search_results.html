@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Search Results for "{{ query }}" in "{{ category }}"</h2>
+    {% if results %}
+        <ul>
+            {% for item in results %}
+                {% if item.manga_title %}
+                    <li><a href="{% url 'manga_detail' item.id %}">{{ item.manga_title }}</a> (Manga)</li>
+                {% elif item.variant_title %}
+                <li>
+                    <a href="{% url 'variant_detail' item.id %}">{{ item.variant_title }}</a> (Variant)
+                    
+                    <!-- Display Images -->
+                    <div class="variant-images">
+                        {% for image in item.images.all %}
+                            <img src="{{ image.image.url }}" alt="Image for {{ item.variant_title }}" class="variant-image">
+                        {% empty %}
+                            <p>No images available for this variant.</p>
+                        {% endfor %}
+                    </div>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No results found.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Confirm Deletion</h2>
+    <p>Are you sure you want to delete "{{ manga.manga_title }}"?</p>
+    
+    <!-- Button Container to center buttons horizontally -->
+     
+    <div class="btn-container">
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+
+    </div>
+
+    <div class="btn-container">
+        <a href="{% url 'manga_detail' manga.id %}" class="btn btn-primary">Cancel</a>
+    </div>
+{% endblock %}
