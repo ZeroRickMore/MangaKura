@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 /MangaKura/media
 MangaKura/db.sqlite3
+MangaKura/db.sqlite3
