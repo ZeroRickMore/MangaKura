@@ -6,7 +6,7 @@ from django.forms import inlineformset_factory
 class MangaForm(forms.ModelForm):
     class Meta:
         model = UserToManga
-        fields = ['manga_title', 'animeclick_url', 'owned_volumes', 'physical_position', 'volume_doubles']
+        fields = ['manga_title', 'animeclick_url', 'description', 'owned_volumes', 'all_read', 'physical_position', 'volume_doubles']
         help_texts = {
             'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera scaffale 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto'.replace('\n', '<br>')),
         }
