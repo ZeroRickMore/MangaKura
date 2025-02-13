@@ -4,7 +4,7 @@
     <h2>Your Variant List</h2>
     <ul>
         {% for variant in user_variants %}
-            <li>
+            <li id="centralized-li">
                 <a href="{% url 'variant_detail' variant_id=variant.id %}">{{ variant.variant_title }}</a>
                 
                 <!-- Display Images -->
@@ -17,7 +17,7 @@
                 </div>
             </li>
         {% empty %}
-            <li>No variants found.</li>
+            <li id="centralized-li">No variants found.</li>
         {% endfor %}
     </ul>
 {% endblock %}
