@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import MangaForm, VariantImageFormSet
+from django.utils.html import format_html
 
 @login_required
 # Link a new manga to the logged in User
@@ -96,7 +97,8 @@ from django.shortcuts import render, get_object_or_404
 def variant_detail(request, variant_id):
     # Fetch the saved UserToVariant instance by ID
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
-
+    variant.description = format_html('<br><br>' + variant.description.replace('\n', '<br>'))
+    variant.vinted_description = format_html('<br><br>' + variant.vinted_description.replace('\n', '<br>'))
     # Get associated images for this variant
     images = VariantImage.objects.filter(variant=variant)
 
@@ -113,6 +115,7 @@ def variant_detail(request, variant_id):
 @login_required
 def manga_detail(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
+    manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))
     return render(request, 'manga_detail.html', {'manga': manga})
 
 

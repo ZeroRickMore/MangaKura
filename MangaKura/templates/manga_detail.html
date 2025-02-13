@@ -8,9 +8,10 @@
 
     <ul>
         <li><strong>AnimeClick URL:</strong> <a href="{{ manga.animeclick_url }}" target="_blank">View on AnimeClick</a></li>
-        <li><strong>Description:</strong> {{ manga.description }}</li>
+        <li><strong>Description:</strong> {{ manga.description }} </li>
         <li><strong>Owned Volumes:</strong> {{ manga.owned_volumes }}</li>
         <li><strong>All read?:</strong> {% if manga.all_read %}Yes{% else %}No{% endif %}</li>
+        <li><strong>Completed?:</strong> {% if manga.completed %}Yes{% else %}No{% endif %}</li>
         <li><strong>Physical Position:</strong> {{ manga.physical_position }}</li>
         <li><strong>Volume Doubles:</strong> {{ manga.volume_doubles }}</li>
     </ul>
