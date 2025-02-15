@@ -1,7 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import MangaForm, VariantImageFormSet
 from django.utils.html import format_html
+from .forms import UserToVariantForm, CopiesSoldForm
+from .models import UserToVariant, VariantImage
+
+
 
 @login_required
 # Link a new manga to the logged in User
@@ -22,10 +26,6 @@ def insert_manga(request):
 
 
 # Link a new Variant to the logged in User
-from django.shortcuts import render, redirect
-from .forms import UserToVariantForm, CopiesSoldForm
-from .models import UserToVariant, VariantImage
-
 
 @login_required
 def insert_variant(request):
@@ -90,7 +90,7 @@ def insert_variant(request):
     return render(request, 'insert_variant.html', {'form': form, 'copies_sold_forms': copies_sold_forms})
 
 
-from django.shortcuts import render, get_object_or_404
+
 
 
 @login_required
