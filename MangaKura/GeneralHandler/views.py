@@ -169,12 +169,17 @@ def view_variants(request):
     ]
 
     variants = UserToVariant.objects.all().order_by('variant_title')
+
+    variants_in_multiple_locations = []
     
     # Group variants by location
     grouped_variants = defaultdict(list)
     for variant in variants:
         physical_positions = variant.physical_position.split(" | ")
-        #print(f"{variant.variant_title} in places {physical_positions}")
+
+        if len(physical_positions) > 1:
+            variants_in_multiple_locations.append(variant.variant_title)
+
         for physical_pos in physical_positions:
             physical_pos = physical_pos.strip()
             grouped_variants[physical_pos].append(variant)
@@ -196,38 +201,45 @@ def view_variants(request):
         for var in variant_list:
             sorted_variants_names.append(var.variant_title)
 
-    #duplicates = []
+    duplicates = []
 
     variants_names = [_.variant_title for _ in variants]
     
     for var_name in variants_names:
-        #if var_name in duplicates:
-        #    print(f"{var_name} DUPPED IN VARIANTS_NAMES")
-        #else:
-        #    duplicates.append(var_name)
+        if var_name in duplicates:
+            s = f"{var_name} DUPPED IN VARIANTS_NAMES"
+            print(s)
+            error_msg += s + '\n'
+        else:
+            duplicates.append(var_name)
 
         if var_name not in sorted_variants_names:
             s = f"{var_name} not in sorted"
             print(s)
             error_msg += s + '\n'
     
-    #duplicates = []
+    duplicates = []
+    duplicated_but_correct_because_multiple_locations = 0
 
     for var_name in sorted_variants_names:
-        #if var_name in duplicates:
-        #    print(f"{var_name} DUPPED IN sorted_variants_names")
-        #else:
-        #    duplicates.append(var_name)
+        if var_name in duplicates:
+            # It is an error, this should not be duplicated
+            s = f"{var_name} DUPPED IN sorted_variants_names"
+            print(s)
+            error_msg += s + '\n'
+        else:
+            duplicates.append(var_name)
 
         if var_name not in variants_names:
             s= f"{var_name} not in unsorted"
             print(s)
             error_msg += s + '\n'
 
-    print(len(variants_names))
-    print(len(sorted_variants_names))
-    print(len(variants_names) == len(sorted_variants_names))
-
+    print("- Expected Variants ->", len(variants_names))
+    print("- Sorted Variants ->", len(sorted_variants_names))
+    print("- Duplicated Correctly because of multiple locations ->", duplicated_but_correct_because_multiple_locations)
+    print("- Is all good? ->", len(variants_names) == (len(sorted_variants_names) - duplicated_but_correct_because_multiple_locations))
+    print("- ERRORS ->", error_msg)
 
     if error_msg != '':
         error_msg = 'ERRORS:\n' + error_msg
