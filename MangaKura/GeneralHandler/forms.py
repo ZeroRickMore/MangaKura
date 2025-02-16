@@ -8,7 +8,7 @@ class MangaForm(forms.ModelForm):
         model = UserToManga
         fields = ['manga_title', 'animeclick_url', 'description', 'owned_volumes', 'all_read', 'completed', 'physical_position', 'volume_doubles']
         help_texts = {
-            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto'.replace('\n', '<br>')),
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
         }
 
 
@@ -68,7 +68,7 @@ class UserToVariantForm(forms.ModelForm):
             'vinted_description'
         ]
         help_texts = {
-            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto'.replace('\n', '<br>')),
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
         }
 
 
