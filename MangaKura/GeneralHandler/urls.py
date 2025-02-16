@@ -14,6 +14,8 @@ urlpatterns = [
     path('variant/<int:variant_id>/edit/', views.edit_variant, name='edit_variant'),
     path('variant/<int:variant_id>/delete/', views.delete_variant, name='delete_variant'),
     path('search/<str:category>/', views.search_view, name='search'),
+    path('viewVariant/sortBy/', views.view_variants, name='view_variants'),
+
 ]
 
 

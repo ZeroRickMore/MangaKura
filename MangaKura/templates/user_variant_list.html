@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+    <!-- Sort By Section -->
+    <div class="sort-container">
+        <label for="sort-options">Sort by:</label>
+        <button onclick="location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
+    </div>
+
     <h2>Your Variant List</h2>
+
     <ul>
         {% for variant in user_variants %}
             <li id="centralized-li">
                 <a href="{% url 'variant_detail' variant_id=variant.id %}">{{ variant.variant_title }}</a>
-                
+
                 <!-- Display Images -->
                 <div class="variant-images">
                     {% for image in variant.images.all %}

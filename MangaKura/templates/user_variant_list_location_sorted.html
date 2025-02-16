@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {{ error_msg }}
+    <h2>Your Variant List</h2>
+
+    <!-- Sort by Dropdown -->
+    <div class="sort-options">
+        <label for="sort">Sort by:</label>
+        <button onclick="window.location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
+    </div>
+
+    {% for location, variants in sorted_groups %}
+        <h1>{{ location }}</h1>
+        <ul>
+            {% for variant in variants %}
+                <li id="centralized-li">
+                    <a href="{% url 'variant_detail' variant_id=variant.id %}">{{ variant.variant_title }}</a>
+                    
+                    <!-- Display Images -->
+                    <div class="variant-images">
+                        {% for image in variant.images.all %}
+                            <img src="{{ image.image.url }}" alt="Image for {{ variant.variant_title }}" class="variant-image">
+                        {% empty %}
+                            <p>No images available for this variant.</p>
+                        {% endfor %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% empty %}
+        <p>No variants found.</p>
+    {% endfor %}
+{% endblock %}

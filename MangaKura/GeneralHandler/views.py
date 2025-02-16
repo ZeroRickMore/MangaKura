@@ -4,6 +4,7 @@ from .forms import MangaForm, VariantImageFormSet
 from django.utils.html import format_html
 from .forms import UserToVariantForm, CopiesSoldForm
 from .models import UserToVariant, VariantImage
+from collections import defaultdict
 
 
 
@@ -135,6 +136,105 @@ def view_variant(request):
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
     
     return render(request, 'user_variant_list.html', {'user_variants': user_variants})
+
+
+#Location
+
+
+@login_required
+def view_variants(request):
+    sort_order = [
+        "Quadro sopra il PC",
+        "Mensola sopra PC 1",
+        "Mensola sopra PC 2",
+        "Libreria nera mensola 1",
+        "Libreria nera mensola 2",
+        "Libreria nera mensola 3",
+        "Libreria nera mensola 4",
+        "Libreria nera mensola 5",
+        "Mensola sopra termosifone 1",
+        "Mensola sopra termosifone 2",
+        "Mensola sopra termosifone 3",
+        "Scaffale pianoforte sx 1",
+        "Scaffale pianoforte sx 2",
+        "Scaffale pianoforte dx 1",
+        "Scaffale pianoforte dx 2",
+        "Mobile della scrivania 1",
+        "Mobile della scrivania 2",
+        "Mobile della scrivania 3",
+        "Mensola sopra il letto",
+        "Armadio del letto",
+        "Baule",
+        "All",
+    ]
+
+    variants = UserToVariant.objects.all().order_by('variant_title')
+    
+    # Group variants by location
+    grouped_variants = defaultdict(list)
+    for variant in variants:
+        physical_positions = variant.physical_position.split(" | ")
+        #print(f"{variant.variant_title} in places {physical_positions}")
+        for physical_pos in physical_positions:
+            physical_pos = physical_pos.strip()
+            grouped_variants[physical_pos].append(variant)
+
+    # Sort locations based on the predefined order
+    sorted_groups = [(loc, grouped_variants[loc]) for loc in sort_order if loc in grouped_variants.keys()]
+
+
+
+    # DEBUG AND CHECKS =================================================================
+
+    error_msg = ""
+
+    sorted_variant_sum = 0
+    sorted_variants_names = []
+    for _ in sorted_groups:
+        variant_list = _[1] # It's a tuple (location, list_of_variant_in_location)
+        sorted_variant_sum += len(variant_list)
+        for var in variant_list:
+            sorted_variants_names.append(var.variant_title)
+
+    #duplicates = []
+
+    variants_names = [_.variant_title for _ in variants]
+    
+    for var_name in variants_names:
+        #if var_name in duplicates:
+        #    print(f"{var_name} DUPPED IN VARIANTS_NAMES")
+        #else:
+        #    duplicates.append(var_name)
+
+        if var_name not in sorted_variants_names:
+            s = f"{var_name} not in sorted"
+            print(s)
+            error_msg += s + '\n'
+    
+    #duplicates = []
+
+    for var_name in sorted_variants_names:
+        #if var_name in duplicates:
+        #    print(f"{var_name} DUPPED IN sorted_variants_names")
+        #else:
+        #    duplicates.append(var_name)
+
+        if var_name not in variants_names:
+            s= f"{var_name} not in unsorted"
+            print(s)
+            error_msg += s + '\n'
+
+    print(len(variants_names))
+    print(len(sorted_variants_names))
+    print(len(variants_names) == len(sorted_variants_names))
+
+
+    if error_msg != '':
+        error_msg = 'ERRORS:\n' + error_msg
+    # DEBUG AND CHECKS =================================================================
+
+    
+    return render(request, "user_variant_list_location_sorted.html", {"sorted_groups": sorted_groups, "error_msg": error_msg})
 
 
 
