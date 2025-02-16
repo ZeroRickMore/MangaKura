@@ -238,6 +238,120 @@ def view_variants(request):
 
 
 
+@login_required
+def view_mangas(request):
+    sort_order = [
+        "Quadro sopra il PC",
+        "Mensola sopra PC 1",
+        "Mensola sopra PC 2",
+        "Libreria nera mensola 1",
+        "Libreria nera mensola 2",
+        "Libreria nera mensola 3",
+        "Libreria nera mensola 4",
+        "Libreria nera mensola 5",
+        "Mensola sopra termosifone 1",
+        "Mensola sopra termosifone 2",
+        "Mensola sopra termosifone 3",
+        "Scaffale pianoforte sx 1",
+        "Scaffale pianoforte sx 2",
+        "Scaffale pianoforte dx 1",
+        "Scaffale pianoforte dx 2",
+        "Mobile della scrivania 1",
+        "Mobile della scrivania 2",
+        "Mobile della scrivania 3",
+        "Mensola sopra il letto",
+        "Armadio del letto",
+        "Baule",
+        "All",
+    ]
+
+    mangas = UserToManga.objects.all().order_by('manga_title')
+    
+    mangas_in_multiple_locations = []
+
+    # Group variants by location
+    grouped_mangas = defaultdict(list)
+    for manga in mangas:
+        physical_positions = manga.physical_position.split(" | ")
+
+        if len(physical_positions) > 1:
+            mangas_in_multiple_locations.append(manga.manga_title)
+
+        for physical_pos in physical_positions:
+            physical_pos = physical_pos.strip()
+            grouped_mangas[physical_pos].append(manga)
+
+    # Sort locations based on the predefined order
+    sorted_groups = [(loc, grouped_mangas[loc]) for loc in sort_order if loc in grouped_mangas.keys()]
+
+
+
+    # DEBUG AND CHECKS =================================================================
+
+    error_msg = ""
+
+    sorted_mangas_sum = 0
+    sorted_mangas_names = []
+    for _ in sorted_groups:
+        manga_list = _[1] # It's a tuple (location, list_of_variant_in_location)
+        sorted_mangas_sum += len(manga_list)
+        for manga in manga_list:
+            sorted_mangas_names.append(manga.manga_title)
+
+    duplicates = []
+
+    mangas_names = [_.manga_title for _ in mangas]
+    
+    for manga_name in mangas_names:
+        if manga in duplicates:
+            s = f"{manga} DUPPED IN MANGAS_NAMES"
+            print(s)
+            error_msg += s + '\n'
+        else:
+            duplicates.append(manga_name)
+
+        if manga_name not in sorted_mangas_names:
+            s = f"{manga_name} not in sorted"
+            print(s)
+            error_msg += s + '\n'
+    
+    duplicates = []
+    duplicated_but_correct_because_multiple_locations = 0
+
+    for manga_name in sorted_mangas_names:
+        if manga_name in duplicates:
+            if manga_name not in mangas_in_multiple_locations:
+                # It is an error, this should not be duplicated
+                s = f"{manga_name} DUPPED IN sorted_variants_names"
+                print(s)
+                error_msg += s + '\n'
+            else:
+                print(f"{manga_name} is duplicated but it's fine as it is in multiple locations!")
+                duplicated_but_correct_because_multiple_locations += 1
+        else:
+            duplicates.append(manga_name)
+
+        if manga_name not in mangas_names:
+            s= f"{manga_name} not in unsorted"
+            print(s)
+            error_msg += s + '\n'
+
+    print("- Expected Mangas ->", len(mangas_names))
+    print("- Sorted Mangas ->", len(sorted_mangas_names))
+    print("- Duplicated Correctly because of multiple locations ->", duplicated_but_correct_because_multiple_locations)
+    print("- Is all good? ->", len(mangas_names) == (len(sorted_mangas_names) - duplicated_but_correct_because_multiple_locations))
+    print("- ERRORS ->", error_msg)
+
+
+    if error_msg != '':
+        error_msg = 'ERRORS:\n' + error_msg
+    # DEBUG AND CHECKS =================================================================
+
+    
+    return render(request, "user_manga_list_location_sorted.html", {"sorted_groups": sorted_groups, "error_msg": error_msg})
+
+
+
 
 # ==================== DELETE AND EDIT METHODS =========================
 

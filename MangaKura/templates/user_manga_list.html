@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+    <!-- Sort by Dropdown -->
+    <div class="sort-options">
+        <label for="sort">Sort by:</label>
+        <button onclick="window.location.href='http://localhost:8000/viewManga/sortBy?sort=Location'">Location</button>
+    </div>
+
     <h2>Your Manga List</h2>
     <ul>
         {% for manga in user_manga %}
