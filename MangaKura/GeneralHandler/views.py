@@ -223,10 +223,14 @@ def view_variants(request):
 
     for var_name in sorted_variants_names:
         if var_name in duplicates:
-            # It is an error, this should not be duplicated
-            s = f"{var_name} DUPPED IN sorted_variants_names"
-            print(s)
-            error_msg += s + '\n'
+            if var_name not in variants_in_multiple_locations:
+                # It is an error, this should not be duplicated
+                s = f"{var_name} DUPPED IN sorted_variants_names"
+                print(s)
+                error_msg += s + '\n'
+            else:
+                print(f"{var_name} is duplicated but it's fine as it is in multiple locations!")
+                duplicated_but_correct_because_multiple_locations += 1
         else:
             duplicates.append(var_name)
 
