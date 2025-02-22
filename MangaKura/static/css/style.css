@@ -354,7 +354,7 @@ p {
 
 /* Style for individual images */
 .variant-image {
-    height: 150px; /* Adjust as needed to keep them barely visible */
+    height: 200px; /* Adjust as needed to keep them barely visible */
     width: auto; /* Keep aspect ratio */
     max-width: 200px; /* Limit width to a maximum of 100px */
     object-fit: contain; /* Ensure image doesn't get distorted */
@@ -382,6 +382,11 @@ p {
     cursor: pointer;
     border: none;
     font-size: 14px; /* Smaller font size */
+}
+
+
+li strong {
+    color: #e12885; /* Pink color */
 }
 
 /* Hover effect for the "Location" button */
