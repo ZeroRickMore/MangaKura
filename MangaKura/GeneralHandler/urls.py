@@ -16,6 +16,7 @@ urlpatterns = [
     path('search/<str:category>/', views.search_view, name='search'),
     path('viewVariant/sortBy/', views.view_variants, name='view_variants'),
     path('viewManga/sortBy/', views.view_mangas, name='view_mangas'),
+    path('wishlist', views.view_wishlist, name='view_wishlist'),
 ]
 
 

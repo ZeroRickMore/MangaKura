@@ -368,6 +368,11 @@ def view_mangas(request):
 
 
 
+@login_required
+def view_wishlist(request):
+    pass
+
+
 
 # ==================== DELETE AND EDIT METHODS =========================
 
