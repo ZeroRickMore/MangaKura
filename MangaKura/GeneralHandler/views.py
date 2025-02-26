@@ -128,9 +128,7 @@ def view_variant(request):
     return render(request, 'user_variant_list.html', {'user_variants': user_variants})
 
 
-#Location
-
-
+# Sort by Location
 @login_required
 def view_variants(request):
     sort_order = [
