@@ -5,7 +5,9 @@ from django.utils.html import format_html
 from .forms import UserToVariantForm, CopiesSoldForm
 from .models import UserToVariant, VariantImage
 from collections import defaultdict
-
+from django.http import FileResponse, Http404, HttpResponse
+from django.conf import settings
+import os
 
 
 @login_required
@@ -439,3 +441,43 @@ def search_view(request, category):
         results = list(UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title')) + list(UserToVariant.objects.filter(variant_title__icontains=query, user=request.user).order_by('variant_title'))
 
     return render(request, 'search_results.html', {'results': results, 'query': query, 'category': category})
+
+
+
+
+
+
+    
+
+# ========================================
+
+@login_required
+def serve_protected_variant_image(request, image_path):
+
+    image_name_in_db = 'variant_images/'+image_path
+
+    file_path = os.path.join(settings.MEDIA_ROOT, image_name_in_db)
+
+    if not os.path.exists(file_path):
+        return HttpResponse("File not found.", status=404)
+
+    related_variant_image_object = VariantImage.objects.get(image=image_name_in_db)
+
+    if related_variant_image_object is None:
+        return HttpResponse("Image object not found.", status=500)
+    
+    related_variant = related_variant_image_object.variant
+    
+    if related_variant is None:
+        return HttpResponse("Associated variant not found.", stauts=500)
+    
+    user_owner = related_variant.user
+
+    if user_owner is None:
+        return HttpResponse("Associated user not found. (This is extremely bad and should never happen).", stauts=500)
+
+    if request.user != user_owner:
+        return HttpResponse("You do not have permission to access this file.", status=403)
+
+
+    return FileResponse(open(file_path, 'rb'))
