@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ wishlist_item.title }}</h2>
+
+{% if images %}
+<ul>
+  <li id="centralized-li">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      {% for image in images %}
+        <div>
+          <img src="{{ image.image.url }}" alt="Wishlist Item Image" style="max-width: 400px; height: auto; max-height: 400px;">
+        </div>
+      {% endfor %}
+    </div>
+  </li>
+</ul>
+{% else %}
+  <p>No images uploaded.</p>
+{% endif %}
+
+<ul>
+  <li><strong>Price:</strong> {{ wishlist_item.price }} €</li>
+  <li><strong>Release Date:</strong> {{ wishlist_item.release_date }}</li>
+  <li><strong>Description:</strong> {{ wishlist_item.description }}</li>
+  <li><strong>Copies to buy:</strong> {{ wishlist_item.copies_to_buy }}</li>
+</ul>
+
+<h3>Useful Links:</h3>
+{% if wishlist_item.useful_links %}
+  <ul>
+    {% for link in wishlist_item.useful_links %}
+      <li><a href="{{ link }}" target="_blank">{{ link }}</a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No useful links provided.</p>
+{% endif %}
+
+<div class="btn-container">
+  <a href="{% url 'edit_wishlist_item' wishlist_item.id %}" class="btn btn-primary">Edit</a>
+  <a href="{% url 'delete_wishlist_item' wishlist_item.id %}" class="btn btn-danger">Delete</a>
+</div>
+
+{% endblock %}
