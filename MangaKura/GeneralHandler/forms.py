@@ -1,5 +1,5 @@
 from django import forms
-from .models import UserToManga
+from .models import UserToManga, UserToVariant, VariantImage, UserToWishlistItem, WishlistImage
 from django.utils.html import format_html
 from django.forms import inlineformset_factory
 
@@ -10,13 +10,6 @@ class MangaForm(forms.ModelForm):
         help_texts = {
             'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
         }
-
-
-
-
-
-
-from .models import UserToVariant, VariantImage
 
 class CopiesSoldForm(forms.Form):
     price = forms.CharField(label="Price when sold", required=False)  # Will store a JSON string of prices
@@ -56,7 +49,7 @@ class CopiesSoldForm(forms.Form):
 class UserToVariantForm(forms.ModelForm):
     copies_sold = forms.CharField(widget=forms.HiddenInput(), required=False)  # Hidden field for storing JSON
     useful_links = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter useful links, one per line.")
-    
+
     stock_price = forms.FloatField(required=False, label="Stock Price")
     current_selling_price = forms.FloatField(required=False, label="Current Selling Price")
 
@@ -76,6 +69,9 @@ class UserToVariantForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Initialize with one pair by default
         self.copies_sold_forms = [CopiesSoldForm(prefix='copy_0')]
+        if self.instance and self.instance.useful_links:
+            # Convert list to a string (one per line)
+            self.fields['useful_links'].initial = "\n".join(self.instance.useful_links)
 
 
     def clean_useful_links(self):
@@ -102,8 +98,6 @@ class UserToVariantForm(forms.ModelForm):
         return instance
 
 
-
-
 class VariantImageForm(forms.ModelForm):
     class Meta:
         model = VariantImage
@@ -111,4 +105,61 @@ class VariantImageForm(forms.ModelForm):
 
 VariantImageFormSet = inlineformset_factory(
     UserToVariant, VariantImage, form=VariantImageForm, extra=3, can_delete=True
+)
+
+
+
+class WishlistItemForm(forms.ModelForm):
+
+    release_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        required=False
+    )
+
+    class Meta:
+        model = UserToWishlistItem
+        fields = [
+            'title', 'price', 'release_date', 'description', 'copies_to_buy'
+        ]
+
+    useful_links = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter useful links, one per line.")
+
+    def clean_useful_links(self):
+        data = self.cleaned_data['useful_links']
+        if data:
+            return [link.strip() for link in data.splitlines() if link.strip()]
+        return []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.useful_links:
+            # Convert list to a string (one per line)
+            self.fields['useful_links'].initial = "\n".join(self.instance.useful_links)
+
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        useful_links_data = self.cleaned_data['useful_links']
+        instance.useful_links = useful_links_data  # Assign cleaned useful_links to the instance
+
+        if commit:
+            instance.save()
+
+        # Handle saving each uploaded image
+        if 'images' in self.cleaned_data and self.cleaned_data['images']:
+            images = self.cleaned_data['images']
+            for image in images:
+                WishlistImage.objects.create(wishlist_item=instance, image=image)
+
+        return instance
+    
+
+class WishlistImageForm(forms.ModelForm):
+    class Meta:
+        model = WishlistImage
+        fields = ["image"]
+
+WishlistImageFormSet = inlineformset_factory(
+    UserToWishlistItem, WishlistImage, form=WishlistImageForm, extra=3, can_delete=True
 )
