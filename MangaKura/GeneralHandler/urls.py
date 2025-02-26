@@ -17,13 +17,15 @@ urlpatterns = [
     path('viewVariant/sortBy/', views.view_variants, name='view_variants'),
     path('viewManga/sortBy/', views.view_mangas, name='view_mangas'),
     path('wishlist', views.view_wishlist, name='view_wishlist'),
+    path('media/variant_images/<str:image_path>/', views.serve_protected_variant_image, name='serve_protected_variant_image'),
 ]
 
 
 
 
-from django.conf import settings
-from django.conf.urls.static import static
+#from django.conf import settings
+#from django.conf.urls.static import static
+
 # Serve media files in development (only works if DEBUG=True)
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:
+#    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
