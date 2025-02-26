@@ -498,8 +498,13 @@ def search_view(request, category):
         results = UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title')
     elif category == "Variant":
         results = UserToVariant.objects.filter(variant_title__icontains=query, user=request.user).order_by('variant_title')
+    elif category == "Wishlist":
+        results = UserToWishlistItem.objects.filter(title__icontains=query, user=request.user).order_by('release_date').order_by('title')
     else:  # Default: Any
-        results = list(UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title')) + list(UserToVariant.objects.filter(variant_title__icontains=query, user=request.user).order_by('variant_title'))
+        # Variant, then Manga, then Wishlist
+        results = list(UserToVariant.objects.filter(variant_title__icontains=query, user=request.user).order_by('variant_title')) + \
+                  list(UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title'))  + \
+                  list(UserToWishlistItem.objects.filter(title__icontains=query, user=request.user).order_by('release_date').order_by('title'))
 
     return render(request, 'search_results.html', {'results': results, 'query': query, 'category': category})
 
