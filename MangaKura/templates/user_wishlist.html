@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <!-- Sort by Dropdown 
+    <div class="sort-options">
+        <label for="sort">Sort by:</label>
+        <button onclick="window.location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
+    </div>
+    -->
+
+    <h2>Your Wishlist</h2>
+
+    <ul>
+        {% for wishlist_item in user_wishlist %}
+            <li id="centralized-li">
+                <a href="{% url 'wishlist_item_detail' wishlist_item_id=wishlist_item.id %}">{{ wishlist_item.title }}</a>
+
+                <!-- Display Images -->
+                <div class="variant-images">
+                    {% for image in wishlist_item.images.all %}
+                        <img src="{{ image.image.url }}" alt="Image for {{ wishlist_item.title }}" class="variant-image">
+                    {% empty %}
+                        <p>No images available for this Wishlist item.</p>
+                    {% endfor %}
+                </div>
+            </li>
+        {% empty %}
+            <li id="centralized-li">No Wishlist items found.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
