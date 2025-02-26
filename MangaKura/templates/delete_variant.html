@@ -3,9 +3,19 @@
 {% block content %}
     <h2>Confirm Deletion</h2>
     <p>Are you sure you want to delete "{{ variant.variant_title }}"?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    </form>
-    <a href="{% url 'variant_detail' variant.id %}">Cancel</a>
+    
+    <!-- Button Container to center buttons horizontally -->
+     
+    <div class="btn-container">
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+
+    </div>
+
+    <div class="btn-container">
+        <a href="{% url 'variant_detail' variant.id %}" class="btn btn-primary">Cancel</a>
+    </div>
 {% endblock %}
