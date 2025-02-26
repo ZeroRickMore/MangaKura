@@ -29,7 +29,6 @@ def insert_manga(request):
 
 
 # Link a new Variant to the logged in User
-
 @login_required
 def insert_variant(request):
     if request.method == 'POST':
@@ -41,17 +40,6 @@ def insert_variant(request):
 
         form.copies_sold_forms = copies_sold_forms  # Attach to main form
 
-        # 🚨 Debugging: Print received POST data
-        print("\n🔍 DEBUG: request.POST\n", dict(request.POST))
-
-        # 🚨 Debugging: Print form errors
-        if not form.is_valid():
-            print("\n🚨 Form Errors:", form.errors)
-
-        if not copies_sold_forms.is_valid():
-            print(f"\n🚨 CopiesSoldForm Errors:", copies_sold_forms.errors)
-
-        # ✅ Proceed only if all forms are valid
         if form.is_valid() and copies_sold_forms.is_valid():
             instance = form.save(commit=False)
             instance.user = request.user
@@ -84,7 +72,7 @@ def insert_variant(request):
             return redirect('variant_detail', variant_id=instance.id)
 
         else:
-            print("\n❌ Validation failed. Fix the above errors.")
+            print("\n Validation failed. Fix the above errors.")
 
     else:
         form = UserToVariantForm()
