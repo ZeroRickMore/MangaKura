@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import MangaForm, VariantImageFormSet
 from django.utils.html import format_html
-from .forms import UserToVariantForm, CopiesSoldForm
+from .forms import MangaForm, VariantImageFormSet, WishlistImageFormSet, UserToVariantForm, CopiesSoldForm, WishlistItemForm
 from .models import UserToVariant, VariantImage
 from collections import defaultdict
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.conf import settings
 import os
+from .models import UserToManga, UserToVariant, UserToWishlistItem, WishlistImage
 
 
 @login_required
@@ -41,8 +41,9 @@ def insert_variant(request):
         form.copies_sold_forms = copies_sold_forms  # Attach to main form
 
         if form.is_valid() and copies_sold_forms.is_valid():
-            instance = form.save(commit=False)
+            instance : UserToVariant = form.save(commit=False) 
             instance.user = request.user
+            instance.variant_title = instance.variant_title[0].upper() +  instance.variant_title[1:] # Capitalize first letter
             instance.save()
 
             # Process Copies Sold Data
@@ -82,6 +83,33 @@ def insert_variant(request):
 
 
 
+@login_required
+# Link a new manga to the logged in User
+def insert_wishlist_item(request):
+    if request.method == "POST":
+        form = WishlistItemForm(request.POST)
+    
+        if form.is_valid():
+            wishlist_item : UserToWishlistItem = form.save(commit=False)
+            wishlist_item.user = request.user  # Link the wishlist_item to the logged-in user
+            wishlist_item.title = wishlist_item.title[0].upper() +  wishlist_item.title[1:] # Capitalize first letter
+            wishlist_item.save()
+
+            # Save Images (handle multiple images)
+            if 'images' in request.FILES:  # Check if images are included in the request
+                images = request.FILES.getlist('images')  # Get the list of images
+                for image in images:
+                    WishlistImage.objects.create(wishlist_item=wishlist_item, image=image)  # Save each image
+                       
+            return redirect('wishlist_item_detail', wishlist_item_id=wishlist_item.id)
+    else:
+        form = WishlistItemForm()
+
+    return render(request, 'insert_wishlist_item.html', {'form': form})
+
+
+
+# ====================== SINGLE ELEMENT VISUALIZE ======================
 
 
 @login_required
@@ -102,7 +130,6 @@ def variant_detail(request, variant_id):
     })
 
 
-
 @login_required
 def manga_detail(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
@@ -110,10 +137,27 @@ def manga_detail(request, manga_id):
     return render(request, 'manga_detail.html', {'manga': manga})
 
 
+@login_required
+def wishlist_item_detail(request, wishlist_item_id):
+    wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
+    wishlist_item.description = format_html('<br><br>' + wishlist_item.description.replace('\n', '<br>'))
+
+    images = WishlistImage.objects.filter(wishlist_item=wishlist_item)
+    return render(request, 'wishlist_item_detail.html', {
+        'wishlist_item': wishlist_item,
+        'images': images,
+        'useful_links': wishlist_item.useful_links
+        }
+    )
+
+
+
+
+
 
 # =================== VISUALIZE METHODS ============================
 
-from .models import UserToManga, UserToVariant
+
 
 @login_required
 def view_manga(request):
@@ -122,10 +166,13 @@ def view_manga(request):
 
 @login_required
 def view_variant(request):
-    # Prefetch related images using the 'images' related name
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
-    
     return render(request, 'user_variant_list.html', {'user_variants': user_variants})
+
+@login_required
+def view_wishlist(request):
+    user_wishlist = UserToWishlistItem.objects.filter(user=request.user).order_by('release_date').order_by('title').prefetch_related('images')
+    return render(request, 'user_wishlist.html', {'user_wishlist': user_wishlist})
 
 
 # Sort by Location
@@ -356,16 +403,14 @@ def view_mangas(request):
 
 
 
-@login_required
-def view_wishlist(request):
-    pass
+
 
 
 
 # ==================== DELETE AND EDIT METHODS =========================
 
 
-login_required
+@login_required
 def edit_manga(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
     if request.method == "POST":
@@ -384,6 +429,10 @@ def delete_manga(request, manga_id):
         manga.delete()
         return redirect('view_manga')
     return render(request, 'delete_manga.html', {'manga': manga})
+
+
+
+
 
 @login_required
 def edit_variant(request, variant_id):
@@ -410,6 +459,32 @@ def delete_variant(request, variant_id):
     return render(request, 'delete_variant.html', {'variant': variant})
 
 
+
+
+
+@login_required
+def edit_wishlist_item(request, wishlist_item_id):
+    wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
+    if request.method == "POST":
+        form = WishlistItemForm(request.POST, instance=wishlist_item)
+        formset = WishlistImageFormSet(request.POST, request.FILES, instance=wishlist_item)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('wishlist_item_detail', wishlist_item_id=wishlist_item.id)
+    else:
+        form = WishlistItemForm(instance=wishlist_item)
+        formset = WishlistImageFormSet(instance=wishlist_item)
+    
+    return render(request, 'edit_wishlist_item.html', {'form': form, 'formset': formset})
+
+@login_required
+def delete_wishlist_item(request, wishlist_item_id):
+    wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
+    if request.method == "POST":
+        wishlist_item.delete()
+        return redirect('view_wishlist')
+    return render(request, 'delete_wishlist_item.html', {'wishlist_item': wishlist_item})
 
 
 
@@ -455,12 +530,45 @@ def serve_protected_variant_image(request, image_path):
     related_variant = related_variant_image_object.variant
     
     if related_variant is None:
-        return HttpResponse("Associated variant not found.", stauts=500)
+        return HttpResponse("Associated variant not found.", status=500)
     
     user_owner = related_variant.user
 
     if user_owner is None:
-        return HttpResponse("Associated user not found. (This is extremely bad and should never happen).", stauts=500)
+        return HttpResponse("Associated user not found. (This is extremely bad and should never happen).", status=500)
+
+    if request.user != user_owner:
+        return HttpResponse("You do not have permission to access this file.", status=403)
+
+
+    return FileResponse(open(file_path, 'rb'))
+
+
+
+@login_required
+def serve_protected_wishlist_item_image(request, image_path):
+
+    image_name_in_db = 'wishlist_images/'+image_path
+
+    file_path = os.path.join(settings.MEDIA_ROOT, image_name_in_db)
+
+    if not os.path.exists(file_path):
+        return HttpResponse("File not found.", status=404)
+
+    related_wishlist_item_image_object = WishlistImage.objects.get(image=image_name_in_db)
+
+    if related_wishlist_item_image_object is None:
+        return HttpResponse("Image object not found.", status=500)
+    
+    related_wishlist_item = related_wishlist_item_image_object.wishlist_item
+    
+    if related_wishlist_item is None:
+        return HttpResponse("Associated WishlistItem not found.", status=500)
+    
+    user_owner = related_wishlist_item.user
+
+    if user_owner is None:
+        return HttpResponse("Associated user not found. (This is extremely bad and should never happen).", status=500)
 
     if request.user != user_owner:
         return HttpResponse("You do not have permission to access this file.", status=403)
