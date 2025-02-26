@@ -41,8 +41,19 @@ class UserToVariant(models.Model):
         return self.variant_title
 
 
+class VariantImage(models.Model):
+    variant = models.ForeignKey(UserToVariant, related_name="images", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='variant_images/')
+    
+    def __str__(self):
+        return f"Image for {self.variant.variant_title}"
+
+
+
+
 # Something that a user wants to buy, to put in a Wishlist.""
-class UserToWishlist(models.Model):
+# Please note that the "Wishlist" itself is not a real Object, rather it is obtained by querying for UserToWishlist where user=logged_user
+class UserToWishlistItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     price = models.FloatField(blank=True, null=True)
@@ -55,10 +66,12 @@ class UserToWishlist(models.Model):
         return self.title
 
 
-class VariantImage(models.Model):
-    variant = models.ForeignKey(UserToVariant, related_name="images", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='variant_images/')
+
+class WishlistImage(models.Model):
+    wishlist_item = models.ForeignKey(UserToWishlistItem, related_name="images", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='wishlist_images/')
     
     def __str__(self):
-        return f"Image for {self.variant.variant_title}"
+        return f"Image for {self.wishlist_item.title}"
+
 
