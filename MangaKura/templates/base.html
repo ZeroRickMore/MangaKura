@@ -25,8 +25,9 @@
                             <option value="Any" selected>Any</option>
                             <option value="Manga">Manga</option>
                             <option value="Variant">Variant</option>
+                            <option value="Variant">Wishlist</option>
                         </select>
-                        <button type="submit">🔍</button>
+                        <button class="search-icon" type="submit">🔍</button>
                     </div>
                 </form>
 
@@ -44,12 +45,20 @@
 
         <div class="right-buttons">
             {% if user.is_authenticated %}
+                <!--
                 <a href="/insertManga">Add Manga 📖</a>
                 <a href="/insertVariant">Add Variant 💰</a>
-                <a href="/insertWishlistItem">Add Wishlist Item 💰</a>
+                <a href="/insertWishlistItem">Add Wishlist Item 💫</a>
                 <a href="/viewManga">Your Mangas 📦</a>
-                <a href="/viewVariant">Your Variants 💯</a>
-                <a href="/wishlist">Your Wishlist 💯</a>
+                <a href="/viewVariant">Your Variants 💎</a>
+                <a href="/wishlist">Your Wishlist 🪐</a>
+                -->
+                <a href="/insertManga">➕📖</a>
+                <a href="/insertVariant">➕💰</a>
+                <a href="/insertWishlistItem">➕💫</a>
+                <a href="/viewManga">👀📦</a>
+                <a href="/viewVariant">👀💎</a>
+                <a href="/wishlist">👀🪐</a>
             {% else %}
                 <a href="{% url 'login' %}">Login</a>
                 <a href="{% url 'register' %}">Register</a>
