@@ -24,8 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wqi)mrtc9h*q3tsh1#v+p0b+yy*6q1$)&az1%ds!r-dx=^1sy+'
 
 
-LOGIN_REDIRECT_URL = 'home'  # Redirect after login
 LOGOUT_REDIRECT_URL = 'login'  # Redirect after logout
+LOGIN_URL = "/login/"
+
 
 
 # Set MEDIA_URL and MEDIA_ROOT to manage image uploads
