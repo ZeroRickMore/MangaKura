@@ -35,6 +35,7 @@ class UserToVariant(models.Model):
     copies_sold = models.JSONField(default=list)
     useful_links = models.JSONField(default=list)
     vinted_description = models.TextField(blank=True, null=True)
+    to_sell = models.BooleanField(default=False)
     #rating = models.FloatField(deafult=0.0, blank=True)
 
     def __str__(self):

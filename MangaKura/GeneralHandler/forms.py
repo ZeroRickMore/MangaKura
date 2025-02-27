@@ -58,7 +58,7 @@ class UserToVariantForm(forms.ModelForm):
         fields = [
             'variant_title', 'related_manga_title', 'description', 'stock_price', 
             'current_selling_price', 'physical_position', 'number_of_owned_copies', 
-            'vinted_description'
+            'vinted_description', 'to_sell'
         ]
         help_texts = {
             'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
