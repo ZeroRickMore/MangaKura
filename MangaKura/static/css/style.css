@@ -354,9 +354,8 @@ p {
 
 /* Style for individual images */
 .variant-image {
-    height: 200px; /* Adjust as needed to keep them barely visible */
+    height: 150px; /* Adjust as needed to keep them barely visible */
     width: auto; /* Keep aspect ratio */
-    max-width: 200px; /* Limit width to a maximum of 100px */
     object-fit: contain; /* Ensure image doesn't get distorted */
     border-radius: 5px; /* Optional: adds rounded corners to the images */
 }
