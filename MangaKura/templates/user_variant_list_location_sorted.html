@@ -8,10 +8,20 @@
     <div class="sort-options">
         <label for="sort">Sort by:</label>
         <button onclick="window.location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
+
+        <br>    <br>
+
+        <!-- Location Buttons -->
+        Go to:
+        <br>    <br>
+        {% for location, variants in sorted_groups %}
+            <button onclick="window.location.href='#{{ location|slugify }}'">{{ location }}</button>
+            <br>    <br>
+        {% endfor %}
     </div>
 
     {% for location, variants in sorted_groups %}
-        <h3>{{ location }}</h3>
+        <h3 id="{{ location|slugify }}">{{ location }}</h3>
         <ul>
             {% for variant in variants %}
                 <li id="centralized-li">
