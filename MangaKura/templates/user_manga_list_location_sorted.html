@@ -15,13 +15,13 @@
         Go to:
         <br>    <br>
         {% for location, variants in sorted_groups %}
-            <button onclick="window.location.href='#{{ location|slugify }}'">{{ location }}</button>
+            <button onclick="window.location.href='#{{ location }}'">{{ location }}</button>
             <br>    <br>
         {% endfor %}
     </div>
 
     {% for location, mangas in sorted_groups %}
-        <h3 id="{{ location|slugify }}">{{ location }}</h3>
+        <h3 id="{{ location }}">{{ location }}</h3>
         <ul>
             {% for manga in mangas %}
                 <li id="centralized-li">
