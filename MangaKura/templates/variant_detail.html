@@ -32,15 +32,14 @@
 
 </ul>
 
-<h3>Copies Sold:</h3>
+
 {% if variant.copies_sold %}
-  <ul>
-    {% for copy in variant.copies_sold %}
-      <li>- Sold {{ copy.amount }} copies for {{ copy.price }} €</li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>No copies sold yet.</p>
+  <h3>Copies Sold:</h3>
+    <ul>
+      {% for copy in variant.copies_sold %}
+        <li>- Sold {{ copy.amount }} copies for {{ copy.price }} €</li>
+      {% endfor %}
+    </ul>
 {% endif %}
 
 <h3>Useful Links:</h3>
