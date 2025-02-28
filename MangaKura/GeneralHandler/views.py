@@ -201,6 +201,7 @@ def view_variants(request):
         "Armadio del letto",
         "Baule",
         "All",
+        "?",
     ]
 
     variants = UserToVariant.objects.all().order_by('variant_title')
@@ -314,6 +315,7 @@ def view_mangas(request):
         "Armadio del letto",
         "Baule",
         "All",
+        "?",
     ]
 
     mangas = UserToManga.objects.all().order_by('manga_title')
