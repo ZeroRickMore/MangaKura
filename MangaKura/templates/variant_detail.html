@@ -9,7 +9,9 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
       {% for image in images %}
         <div>
-          <img src="{{ image.image.url }}" alt="Variant Image" style="max-width: 400px; height: auto; max-height: 400px;">
+          <a href="{{ image.image.url }}" target="_blank">
+            <img src="{{ image.image.url }}" alt="Variant Image" style="max-width: 400px; height: auto; max-height: 400px;">
+          </a>   
         </div>
       {% endfor %}
     </div>
