@@ -191,6 +191,7 @@ def build_mangas_stats(user_manga_list):
     read_mangas = 0
     completed_mangas = 0
     completed_but_unread_mangas = 0
+    all_published_mangas = 0
     total_money_spent = 0.00
 
     for manga in user_manga_list:
@@ -198,6 +199,7 @@ def build_mangas_stats(user_manga_list):
         read_mangas += int(manga.all_read) # It's a bool, if all read adds 1, else 0
         completed_mangas += int(manga.completed) # Same
         completed_but_unread_mangas += int(manga.completed and not manga.all_read)
+        all_published_mangas += int(manga.all_published)
         total_money_spent += manga.whole_series_price_calculated
 
     stats = {
@@ -206,6 +208,7 @@ def build_mangas_stats(user_manga_list):
         'unread_mangas' : total_mangas - read_mangas,
         'completed_mangas' : completed_mangas,
         'completed_but_unread_mangas' : completed_but_unread_mangas,
+        'all_published_mangas' : all_published_mangas,
         'total_money_spent' : int(total_money_spent),
     }
 
