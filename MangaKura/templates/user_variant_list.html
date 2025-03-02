@@ -2,13 +2,19 @@
 
 {% block content %}
 
+    <h2>Your Variant List</h2>
+
+    Statistics: <br>
+    🔹 Total = {{ stats.total_variants }} <br>
+    <br>
+
     <!-- Sort by Dropdown -->
     <div class="sort-options">
         <label for="sort">Sort by:</label>
         <button onclick="window.location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
     </div>
 
-    <h2>Your Variant List</h2>
+    
 
     <ul>
         {% for variant in user_variants %}
