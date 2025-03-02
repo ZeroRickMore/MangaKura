@@ -6,9 +6,13 @@ from django.forms import inlineformset_factory
 class MangaForm(forms.ModelForm):
     class Meta:
         model = UserToManga
-        fields = ['manga_title', 'animeclick_url', 'description', 'owned_volumes', 'all_read', 'completed', 'physical_position', 'volume_doubles']
+        fields = ['manga_title', 'animeclick_url', 'single_volume_price', 'whole_series_price', 'description', 'owned_volumes', 'all_read', 'completed', 'all_published', 'physical_position', 'volume_doubles']
+        labels = {
+            'completed': 'All bought',
+        }
         help_texts = {
             'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
+            'single_volume_price' : format_html('Da usare solo se si elencano i volumi nel formato 1-3, 5, 10-15.\nSe si vuole un controllo manuale, lasciare questo a zero, e\ninserire il totale in Whole Series Price.')
         }
 
 class CopiesSoldForm(forms.Form):

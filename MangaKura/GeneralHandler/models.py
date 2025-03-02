@@ -7,13 +7,17 @@ class UserToManga(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     manga_title = models.CharField(max_length=255)
     animeclick_url = models.URLField(blank=True, null=True)
+    single_volume_price = models.FloatField(default=0.0)
+    whole_series_price = models.FloatField(default=0.0, blank=True)
     owned_volumes = models.CharField(max_length=255)
     physical_position = models.CharField(max_length=255)
     volume_doubles = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     all_read = models.BooleanField(default=False, blank=True)
     completed = models.BooleanField(default=False, blank=True)
+    all_published = models.BooleanField(default=False, blank=True)
     #rating = models.FloatField(deafult=0.0, blank=True)
+    whole_series_price_calculated = models.FloatField(default=0.0, blank=True) # The user has to way to interact with this.
 
     def __str__(self):
         return f"{self.manga_title}"
