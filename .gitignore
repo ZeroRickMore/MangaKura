@@ -161,3 +161,4 @@ cython_debug/
 /MangaKura/media
 MangaKura/db.sqlite3
 MangaKura/db.sqlite3
+MangaKura/GeneralHandler/test.py
