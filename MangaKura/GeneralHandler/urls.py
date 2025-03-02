@@ -1,6 +1,7 @@
 
 from django.urls import path
 from . import views
+from . import extra_functions
 
 urlpatterns = [
     path('search/<str:category>/', views.search_view, name='search'),
@@ -32,6 +33,12 @@ urlpatterns = [
     path('wishlist_item/<int:wishlist_item_id>/edit/', views.edit_wishlist_item, name='edit_wishlist_item'),
     path('wishlist_item/<int:wishlist_item_id>/delete/', views.delete_wishlist_item, name='delete_wishlist_item'),
     path('media/wishlist_images/<str:image_path>/', views.serve_protected_wishlist_item_image, name='serve_protected_wishlist_item_image'),
+
+    # ============================== EXTRA REST API STUFF ========================
+
+    path('apis', extra_functions.apis),
+    path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs)
+
 ]
 
 
