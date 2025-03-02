@@ -2,7 +2,18 @@
 
 {% block content %}
     {{ error_msg }}
+    
     <h2>Your Manga List</h2>
+
+    Statistics: <br>
+    🔹 Total = {{ stats.total_mangas }} <br>
+    🔹 All Read = {{ stats.read_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 Unread = {{ stats.unread_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 Completed = {{ stats.completed_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 Completed but unread = {{ stats.completed_but_unread_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 Total money spent = {{ stats.total_money_spent }} <br>
+    <br>
+
 
     <!-- Sort by Dropdown -->
     <div class="sort-options">
