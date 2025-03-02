@@ -206,7 +206,7 @@ def build_mangas_stats(user_manga_list):
         'unread_mangas' : total_mangas - read_mangas,
         'completed_mangas' : completed_mangas,
         'completed_but_unread_mangas' : completed_but_unread_mangas,
-        'total_money_spent' : total_money_spent,
+        'total_money_spent' : int(total_money_spent),
     }
 
     return stats
