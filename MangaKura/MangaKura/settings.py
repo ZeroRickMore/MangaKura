@@ -25,6 +25,7 @@ SECRET_KEY = 'django-insecure-wqi)mrtc9h*q3tsh1#v+p0b+yy*6q1$)&az1%ds!r-dx=^1sy+
 
 
 LOGOUT_REDIRECT_URL = 'login'  # Redirect after logout
+LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = "/login/"
 
 
