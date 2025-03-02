@@ -16,9 +16,38 @@ def insert_manga(request):
     if request.method == "POST":
         form = MangaForm(request.POST)
         if form.is_valid():
-            manga = form.save(commit=False)
+            manga : UserToManga = form.save(commit=False)
             manga.user = request.user  # Link the manga to the logged-in user
             manga.manga_title = manga.manga_title[0].upper() +  manga.manga_title[1:] # Capitalize first letter
+
+            # Calculate manga cost ========================================================================
+            manga_cost = manga.whole_series_price
+            if manga_cost > 0:
+                manga_cost = manga_cost
+            else:
+                # Calc total money spent the hard way...
+                single_volume_price = manga.single_volume_price
+                # Find a way to translate 1-5, 7, 10-11 to being volumes from 1 to 5, 7, and 10 to 11.
+                # So, in total, 8 volumes.
+                def count_volumes(s):
+                    total = 0
+                    parts = s.split(", ")
+                    
+                    for part in parts:
+                        if "-" in part:
+                            start, end = map(int, part.split("-"))
+                            total += (end - start + 1)
+                        else:
+                            total += 1  # Single number
+                    
+                    return total
+                volumes = count_volumes(manga.owned_volumes)
+
+                manga_cost = single_volume_price * volumes
+
+            manga.whole_series_price_calculated = manga_cost
+            # ==============================================================================================
+
             manga.save()
             return redirect('manga_detail', manga_id=manga.id)
     else:
@@ -133,7 +162,7 @@ def variant_detail(request, variant_id):
 @login_required
 def manga_detail(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
-    manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))
+    manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))  if manga.description else ''
     return render(request, 'manga_detail.html', {'manga': manga})
 
 
@@ -157,21 +186,58 @@ def wishlist_item_detail(request, wishlist_item_id):
 
 # =================== VISUALIZE METHODS ============================
 
+def build_mangas_stats(user_manga_list):
+    total_mangas = len(user_manga_list)
+    read_mangas = 0
+    completed_mangas = 0
+    completed_but_unread_mangas = 0
+    total_money_spent = 0.00
+
+    for manga in user_manga_list:
+        manga : UserToManga
+        read_mangas += int(manga.all_read) # It's a bool, if all read adds 1, else 0
+        completed_mangas += int(manga.completed) # Same
+        completed_but_unread_mangas += int(manga.completed and not manga.all_read)
+        total_money_spent += manga.whole_series_price_calculated
+
+    stats = {
+        'total_mangas' : total_mangas,
+        'read_mangas' : read_mangas,
+        'unread_mangas' : total_mangas - read_mangas,
+        'completed_mangas' : completed_mangas,
+        'completed_but_unread_mangas' : completed_but_unread_mangas,
+        'total_money_spent' : total_money_spent,
+    }
+
+    return stats
+
+def build_variant_stats(user_variant_list):
+    total_variants = len(user_variant_list)
+
+    stats = {
+        'total_variants' : total_variants,
+   }
+
+    return stats
 
 
 @login_required
 def view_manga(request):
     user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
-    return render(request, 'user_manga_list.html', {'user_manga': user_manga})
+
+    stats = build_mangas_stats(user_manga_list=user_manga)
+
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 
 @login_required
 def view_variant(request):
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
-    return render(request, 'user_variant_list.html', {'user_variants': user_variants})
+    stats = build_variant_stats(user_variants)
+    return render(request, 'user_variant_list.html', {'user_variants': user_variants, 'stats':stats})
 
 @login_required
 def view_wishlist(request):
-    user_wishlist = UserToWishlistItem.objects.filter(user=request.user).order_by('release_date').order_by('title').prefetch_related('images')
+    user_wishlist = UserToWishlistItem.objects.filter(user=request.user).order_by('title').order_by('release_date').prefetch_related('images')
     return render(request, 'user_wishlist.html', {'user_wishlist': user_wishlist})
 
 
@@ -285,8 +351,8 @@ def view_variants(request):
         error_msg = 'ERRORS:\n' + error_msg
     # DEBUG AND CHECKS =================================================================
 
-    
-    return render(request, "user_variant_list_location_sorted.html", {"sorted_groups": sorted_groups, "error_msg": error_msg})
+    stats = build_variant_stats(variants)
+    return render(request, "user_variant_list_location_sorted.html", {"sorted_groups": sorted_groups, "error_msg": error_msg, "stats":stats})
 
 
 
@@ -400,8 +466,14 @@ def view_mangas(request):
         error_msg = 'ERRORS:\n' + error_msg
     # DEBUG AND CHECKS =================================================================
 
+    stats = build_mangas_stats(user_manga_list=mangas)
     
-    return render(request, "user_manga_list_location_sorted.html", {"sorted_groups": sorted_groups, "error_msg": error_msg})
+    return render(request, "user_manga_list_location_sorted.html", {
+        "sorted_groups": sorted_groups, 
+        "error_msg": error_msg, 
+        "stats":stats
+        }
+    )
 
 
 
