@@ -307,7 +307,28 @@ def view_manga(request):
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 
+@login_required
+def view_mangas_with_criteria(request, view_criteria : str):
+    ALLOWED_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread']
 
+    view_criteria = view_criteria.lower()
+
+    if view_criteria not in ALLOWED_VIEW_CRITERIAS: # BAD REQUEST
+        return HttpResponse(f'You cannot use {view_criteria} as a view criteria!', status=400)
+    
+    match view_criteria:
+        case 'all_read':
+            user_manga = UserToManga.objects.filter(user=request.user, all_read=True).order_by('manga_title')
+        case 'all_unread':
+            user_manga = UserToManga.objects.filter(user=request.user, all_read=False).order_by('manga_title')    
+        case 'all_published':
+            user_manga = UserToManga.objects.filter(user=request.user, all_published=True).order_by('manga_title')  
+        case 'completed':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=True).order_by('manga_title')  
+        case 'completed_unread':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=True, all_read=False).order_by('manga_title')
+
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga})
 
 
 
