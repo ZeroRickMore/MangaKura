@@ -4,16 +4,17 @@
 
     <h2>Your Manga List</h2>
 
+    {% if stats %}
     Statistics: <br>
     🔹 Total = {{ stats.total_mangas }} <br>
-    🔹 All Read = {{ stats.read_mangas }}/{{ stats.total_mangas }} <br>
-    🔹 Unread = {{ stats.unread_mangas }}/{{ stats.total_mangas }} <br>
-    🔹 Fully published = {{ stats.completed_mangas }}/{{ stats.all_published_mangas }} <br>
-    🔹 Completed = {{ stats.completed_mangas }}/{{ stats.total_mangas }} <br>
-    🔹 Completed but unread = {{ stats.completed_but_unread_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}all_read" id="stats">All Read</a> = {{ stats.read_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}all_unread" id="stats">Unread</a> = {{ stats.unread_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}all_published" id="stats">Fully published</a> = {{ stats.all_published_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}completed" id="stats">Completed</a> = {{ stats.completed_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}completed_unread" id="stats">Completed but unread</a> = {{ stats.completed_but_unread_mangas }}/{{ stats.total_mangas }} <br>
     🔹 Total money spent = {{ stats.total_money_spent }} <br>
     <br>
-
+    {% endif %}
 
     <!-- Sort by Dropdown -->
     <div class="sort-options">
