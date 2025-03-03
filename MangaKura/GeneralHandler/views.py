@@ -257,6 +257,7 @@ def build_mangas_stats(user_manga_list):
     completed_but_unread_mangas = 0
     all_published_mangas = 0
     total_money_spent = 0.00
+    published_uncompleted = 0
 
     for manga in user_manga_list:
         manga : UserToManga
@@ -265,6 +266,7 @@ def build_mangas_stats(user_manga_list):
         completed_but_unread_mangas += int(manga.completed and not manga.all_read)
         all_published_mangas += int(manga.all_published)
         total_money_spent += manga.whole_series_price_calculated
+        published_uncompleted += int(manga.all_published and not manga.completed)
 
     stats = {
         'total_mangas' : total_mangas,
@@ -272,7 +274,9 @@ def build_mangas_stats(user_manga_list):
         'unread_mangas' : total_mangas - read_mangas,
         'completed_mangas' : completed_mangas,
         'completed_but_unread_mangas' : completed_but_unread_mangas,
+        'uncompleted_mangas' : total_mangas - completed_mangas,
         'all_published_mangas' : all_published_mangas,
+        'published_uncompleted' : published_uncompleted,
         'total_money_spent' : int(total_money_spent),
     }
 
@@ -325,7 +329,7 @@ def view_manga(request): #
 
 @login_required
 def view_mangas_with_criteria(request, view_criteria : str):
-    ALLOWED_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread']
+    ALLOWED_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread', 'uncompleted', 'published_uncompleted']
 
     view_criteria = view_criteria.lower()
 
@@ -343,6 +347,10 @@ def view_mangas_with_criteria(request, view_criteria : str):
             user_manga = UserToManga.objects.filter(user=request.user, completed=True).order_by('manga_title')  
         case 'completed_unread':
             user_manga = UserToManga.objects.filter(user=request.user, completed=True, all_read=False).order_by('manga_title')
+        case 'uncompleted':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=False).order_by('manga_title')
+        case 'published_uncompleted':
+            user_manga = UserToManga.objects.filter(user=request.user, all_published=True, completed=False).order_by('manga_title')
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga})
 

@@ -12,7 +12,9 @@
     🔹 <a href="{{ request.path }}all_unread" id="stats">Unread</a> = {{ stats.unread_mangas }}/{{ stats.total_mangas }} <br>
     🔹 <a href="{{ request.path }}all_published" id="stats">Fully published</a> = {{ stats.all_published_mangas }}/{{ stats.total_mangas }} <br>
     🔹 <a href="{{ request.path }}completed" id="stats">Completed</a> = {{ stats.completed_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}uncompleted" id="stats">Uncompleted</a> = {{ stats.uncompleted_mangas }}/{{ stats.total_mangas }} <br>
     🔹 <a href="{{ request.path }}completed_unread" id="stats">Completed but unread</a> = {{ stats.completed_but_unread_mangas }}/{{ stats.total_mangas }} <br>
+    🔹 <a href="{{ request.path }}published_uncompleted" id="stats">Published but uncompleted</a> = {{ stats.published_uncompleted }}/{{ stats.total_mangas }} <br>
     🔹 Total money spent = {{ stats.total_money_spent }} <br>
     <br>
     {% endif %}
