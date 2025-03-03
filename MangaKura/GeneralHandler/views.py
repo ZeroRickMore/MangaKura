@@ -302,6 +302,9 @@ def build_variant_stats(user_variant_list):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════
+ALLOWED_MANGA_SORTS = ['location']
+ALLOWED_MANGA_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread', 'uncompleted', 'published_uncompleted']
+
 
 @login_required
 def view_manga(request): # 
@@ -312,7 +315,6 @@ def view_manga(request): #
     
     if sort_param:
         sort_param = sort_param.lower()
-        ALLOWED_MANGA_SORTS = ['location']
 
         if sort_param not in ALLOWED_MANGA_SORTS:
             return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
@@ -327,32 +329,71 @@ def view_manga(request): #
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 
+
 @login_required
 def view_mangas_with_criteria(request, view_criteria : str):
-    ALLOWED_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread', 'uncompleted', 'published_uncompleted']
+
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+
+        if sort_param not in ALLOWED_MANGA_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        def view_mangas_location_sorted_given_a_list_of_mangas(mangas_list, sort_param):
+            match sort_param:
+                case 'location':
+                    sorted_groups, error_msg = get_mangas_sorted_groups_and_error_msg_for_location(mangas_list=mangas_list)
+
+                    return render(request, "user_manga_list_location_sorted.html", {
+                        "sorted_groups": sorted_groups, 
+                        "error_msg": error_msg, 
+                        }
+                    )
+            
+            return HttpResponse(f'BAD REQUEST: You cannot use {view_criteria} as a view criteria! This should have been checked earlier though...', status=400)
+        
+    # ════════════════════════════════════════════════════════════════════════════════
 
     view_criteria = view_criteria.lower()
 
-    if view_criteria not in ALLOWED_VIEW_CRITERIAS: # BAD REQUEST
+    if view_criteria not in ALLOWED_MANGA_VIEW_CRITERIAS: # BAD REQUEST
         return HttpResponse(f'BAD REQUEST: You cannot use {view_criteria} as a view criteria!', status=400)
     
     match view_criteria:
         case 'all_read':
             user_manga = UserToManga.objects.filter(user=request.user, all_read=True).order_by('manga_title')
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'all_unread':
-            user_manga = UserToManga.objects.filter(user=request.user, all_read=False).order_by('manga_title')    
+            user_manga = UserToManga.objects.filter(user=request.user, all_read=False).order_by('manga_title')   
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param) 
         case 'all_published':
             user_manga = UserToManga.objects.filter(user=request.user, all_published=True).order_by('manga_title')  
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'completed':
             user_manga = UserToManga.objects.filter(user=request.user, completed=True).order_by('manga_title')  
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'completed_unread':
             user_manga = UserToManga.objects.filter(user=request.user, completed=True, all_read=False).order_by('manga_title')
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'uncompleted':
             user_manga = UserToManga.objects.filter(user=request.user, completed=False).order_by('manga_title')
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'published_uncompleted':
             user_manga = UserToManga.objects.filter(user=request.user, all_published=True, completed=False).order_by('manga_title')
+            if sort_param:
+                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
 
-    return render(request, 'user_manga_list.html', {'user_manga': user_manga})
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga}) # All good, sort_param did not get used!
 
 
 
@@ -522,11 +563,26 @@ def view_mangas_location_sorted(request):
 
     mangas = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     
+    sorted_groups, error_msg = get_mangas_sorted_groups_and_error_msg_for_location(mangas_list=mangas)
+
+    stats = build_mangas_stats(user_manga_list=mangas)
+    
+    return render(request, "user_manga_list_location_sorted.html", {
+        "sorted_groups": sorted_groups, 
+        "error_msg": error_msg, 
+        "stats":stats
+        }
+    )
+
+
+
+
+def get_mangas_sorted_groups_and_error_msg_for_location(mangas_list : list[UserToManga]) -> tuple[list[tuple[str, list[str]]], str]:
     mangas_in_multiple_locations = []
 
     # Group variants by location
     grouped_mangas = defaultdict(list)
-    for manga in mangas:
+    for manga in mangas_list:
         physical_positions = manga.physical_position.split(" | ")
 
         if len(physical_positions) > 1:
@@ -555,7 +611,7 @@ def view_mangas_location_sorted(request):
 
     duplicates = []
 
-    mangas_names = [_.manga_title for _ in mangas]
+    mangas_names = [_.manga_title for _ in mangas_list]
     
     for manga_name in mangas_names:
         if manga in duplicates:
@@ -602,19 +658,7 @@ def view_mangas_location_sorted(request):
         error_msg = 'ERRORS:\n' + error_msg
     # DEBUG AND CHECKS =================================================================
 
-    stats = build_mangas_stats(user_manga_list=mangas)
-    
-    return render(request, "user_manga_list_location_sorted.html", {
-        "sorted_groups": sorted_groups, 
-        "error_msg": error_msg, 
-        "stats":stats
-        }
-    )
-
-
-
-
-
+    return sorted_groups, error_msg
 
 
 
