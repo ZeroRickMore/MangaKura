@@ -300,9 +300,25 @@ def build_variant_stats(user_variant_list):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def view_manga(request):
-    user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
+def view_manga(request): # 
 
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+        ALLOWED_MANGA_SORTS = ['location']
+
+        if sort_param not in ALLOWED_MANGA_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        match sort_param:
+            case 'location':
+                return view_mangas_location_sorted(request)
+    # ════════════════════════════════════════════════════════════════════════════════
+
+    user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     stats = build_mangas_stats(user_manga_list=user_manga)
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
@@ -314,7 +330,7 @@ def view_mangas_with_criteria(request, view_criteria : str):
     view_criteria = view_criteria.lower()
 
     if view_criteria not in ALLOWED_VIEW_CRITERIAS: # BAD REQUEST
-        return HttpResponse(f'You cannot use {view_criteria} as a view criteria!', status=400)
+        return HttpResponse(f'BAD REQUEST: You cannot use {view_criteria} as a view criteria!', status=400)
     
     match view_criteria:
         case 'all_read':
@@ -336,6 +352,23 @@ def view_mangas_with_criteria(request, view_criteria : str):
 
 @login_required
 def view_variant(request):
+
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+        ALLOWED_VARIANT_SORTS = ['location']
+
+        if sort_param not in ALLOWED_VARIANT_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        match sort_param:
+            case 'location':
+                return view_variants_location_sorted(request)
+    # ════════════════════════════════════════════════════════════════════════════════
+
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
     stats = build_variant_stats(user_variants)
     return render(request, 'user_variant_list.html', {'user_variants': user_variants, 'stats':stats})
@@ -384,7 +417,7 @@ sort_order = [
 ]
 
 @login_required
-def view_variants(request):
+def view_variants_location_sorted(request):
 
     variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title')
 
@@ -477,7 +510,7 @@ def view_variants(request):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def view_mangas(request):
+def view_mangas_location_sorted(request):
 
     mangas = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     
