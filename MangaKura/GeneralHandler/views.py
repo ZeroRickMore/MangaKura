@@ -1,14 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.html import format_html
-from .forms import MangaForm, VariantImageFormSet, WishlistImageFormSet, UserToVariantForm, CopiesSoldForm, WishlistItemForm
-from .models import UserToVariant, VariantImage
+from .forms import *
+from .models import *
 from collections import defaultdict
 from django.http import FileResponse, HttpResponse
 from django.conf import settings
 import os
-from .models import UserToManga, UserToVariant, UserToWishlistItem, WishlistImage
 
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                     INSERT METHODS                                      ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 # Link a new manga to the logged in User
@@ -21,6 +33,7 @@ def insert_manga(request):
             manga.manga_title = manga.manga_title[0].upper() +  manga.manga_title[1:] # Capitalize first letter
 
             # Calculate manga cost ========================================================================
+            
             manga_cost = manga.whole_series_price
             if manga_cost > 0:
                 manga_cost = manga_cost
@@ -56,6 +69,11 @@ def insert_manga(request):
     return render(request, 'insert_manga.html', {'form': form})
 
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 # Link a new Variant to the logged in User
 @login_required
@@ -112,6 +130,10 @@ def insert_variant(request):
 
 
 
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 # Link a new manga to the logged in User
 def insert_wishlist_item(request):
@@ -138,8 +160,25 @@ def insert_wishlist_item(request):
 
 
 
-# ====================== SINGLE ELEMENT VISUALIZE ======================
 
+
+
+
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                SINGLE ELEMENT VISUALIZE                                 ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def variant_detail(request, variant_id):
@@ -159,12 +198,22 @@ def variant_detail(request, variant_id):
     })
 
 
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def manga_detail(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
     manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))  if manga.description else ''
     return render(request, 'manga_detail.html', {'manga': manga})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def wishlist_item_detail(request, wishlist_item_id):
@@ -184,7 +233,22 @@ def wishlist_item_detail(request, wishlist_item_id):
 
 
 
-# =================== VISUALIZE METHODS ============================
+
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                    VISUALIZE METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 def build_mangas_stats(user_manga_list):
     total_mangas = len(user_manga_list)
@@ -214,6 +278,12 @@ def build_mangas_stats(user_manga_list):
 
     return stats
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 def build_variant_stats(user_variant_list):
     total_variants = len(user_variant_list)
 
@@ -224,6 +294,11 @@ def build_variant_stats(user_variant_list):
     return stats
 
 
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def view_manga(request):
     user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
@@ -232,11 +307,23 @@ def view_manga(request):
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def view_variant(request):
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
     stats = build_variant_stats(user_variants)
     return render(request, 'user_variant_list.html', {'user_variants': user_variants, 'stats':stats})
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def view_wishlist(request):
@@ -244,36 +331,41 @@ def view_wishlist(request):
     return render(request, 'user_wishlist.html', {'user_wishlist': user_wishlist})
 
 
-# Sort by Location
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
+sort_order = [
+    "Quadro sopra il PC",
+    "Mensola sopra PC 1",
+    "Mensola sopra PC 2",
+    "Libreria nera mensola 1",
+    "Libreria nera mensola 2",
+    "Libreria nera mensola 3",
+    "Libreria nera mensola 4",
+    "Libreria nera mensola 5",
+    "Mensola sopra termosifone 1",
+    "Mensola sopra termosifone 2",
+    "Mensola sopra termosifone 3",
+    "Scaffale pianoforte sx 1",
+    "Scaffale pianoforte sx 2",
+    "Scaffale pianoforte dx 1",
+    "Scaffale pianoforte dx 2",
+    "Mobile della scrivania 1",
+    "Mobile della scrivania 2",
+    "Mobile della scrivania 3",
+    "Mensola sopra il letto",
+    "Armadio del letto",
+    "Baule",
+    "All",
+    "?",
+]
+
 @login_required
 def view_variants(request):
-    sort_order = [
-        "Quadro sopra il PC",
-        "Mensola sopra PC 1",
-        "Mensola sopra PC 2",
-        "Libreria nera mensola 1",
-        "Libreria nera mensola 2",
-        "Libreria nera mensola 3",
-        "Libreria nera mensola 4",
-        "Libreria nera mensola 5",
-        "Mensola sopra termosifone 1",
-        "Mensola sopra termosifone 2",
-        "Mensola sopra termosifone 3",
-        "Scaffale pianoforte sx 1",
-        "Scaffale pianoforte sx 2",
-        "Scaffale pianoforte dx 1",
-        "Scaffale pianoforte dx 2",
-        "Mobile della scrivania 1",
-        "Mobile della scrivania 2",
-        "Mobile della scrivania 3",
-        "Mensola sopra il letto",
-        "Armadio del letto",
-        "Baule",
-        "All",
-        "?",
-    ]
 
-    variants = UserToVariant.objects.all().order_by('variant_title')
+    variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title')
 
     variants_in_multiple_locations = []
     
@@ -359,35 +451,14 @@ def view_variants(request):
 
 
 
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def view_mangas(request):
-    sort_order = [
-        "Quadro sopra il PC",
-        "Mensola sopra PC 1",
-        "Mensola sopra PC 2",
-        "Libreria nera mensola 1",
-        "Libreria nera mensola 2",
-        "Libreria nera mensola 3",
-        "Libreria nera mensola 4",
-        "Libreria nera mensola 5",
-        "Mensola sopra termosifone 1",
-        "Mensola sopra termosifone 2",
-        "Mensola sopra termosifone 3",
-        "Scaffale pianoforte sx 1",
-        "Scaffale pianoforte sx 2",
-        "Scaffale pianoforte dx 1",
-        "Scaffale pianoforte dx 2",
-        "Mobile della scrivania 1",
-        "Mobile della scrivania 2",
-        "Mobile della scrivania 3",
-        "Mensola sopra il letto",
-        "Armadio del letto",
-        "Baule",
-        "All",
-        "?",
-    ]
 
-    mangas = UserToManga.objects.all().order_by('manga_title')
+    mangas = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     
     mangas_in_multiple_locations = []
 
@@ -484,8 +555,21 @@ def view_mangas(request):
 
 
 
-# ==================== DELETE AND EDIT METHODS =========================
 
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                              DELETE AND EDIT METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_manga(request, manga_id):
@@ -499,6 +583,12 @@ def edit_manga(request, manga_id):
         form = MangaForm(instance=manga)
     return render(request, 'edit_manga.html', {'form': form})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def delete_manga(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
@@ -510,6 +600,8 @@ def delete_manga(request, manga_id):
 
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_variant(request, variant_id):
@@ -527,6 +619,12 @@ def edit_variant(request, variant_id):
     
     return render(request, 'edit_variant.html', {'form': form, 'formset': formset})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def delete_variant(request, variant_id):
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
@@ -538,6 +636,8 @@ def delete_variant(request, variant_id):
 
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_wishlist_item(request, wishlist_item_id):
@@ -555,6 +655,12 @@ def edit_wishlist_item(request, wishlist_item_id):
     
     return render(request, 'edit_wishlist_item.html', {'form': form, 'formset': formset})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def delete_wishlist_item(request, wishlist_item_id):
     wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
@@ -566,7 +672,24 @@ def delete_wishlist_item(request, wishlist_item_id):
 
 
 
-# ====================== SEARCH METHODS ============================
+
+
+
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                   SEARCH METHODS                                        ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 def search_view(request, category):
     query = request.GET.get('q', '')
@@ -590,9 +713,22 @@ def search_view(request, category):
 
 
 
-    
 
-# ========================================
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                PROTECT IMAGE METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def serve_protected_variant_image(request, image_path):
@@ -626,6 +762,10 @@ def serve_protected_variant_image(request, image_path):
     return FileResponse(open(file_path, 'rb'))
 
 
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def serve_protected_wishlist_item_image(request, image_path):
