@@ -58,7 +58,8 @@ button.logout-button {
 nav a:hover,
 button[type="submit"]:hover,
 button.logout-button:hover {
-    background-color: #00a0c6; /* Darker cyan on hover */
+    background-color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
     transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
@@ -129,7 +130,7 @@ form button[type="submit"] {
 }
 
 form button[type="submit"]:hover {
-    background-color: #00a0c6;
+    background-color: #E12885;
 }
 
 /* Image preview (if applicable) */
@@ -168,7 +169,8 @@ ul li a {
 }
 
 ul li a:hover {
-    color: #00a0c6;
+    color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
 }
 
 /* Empty state styling for lists (when no items) */
@@ -463,4 +465,16 @@ li strong {
 .search-container button:hover {
     background-color: #00a0c6;
     transform: scale(1.05);
+}
+
+#stats {
+    text-decoration: none; /* Remove underline */
+    color: #3498db; /* Default text color */
+    font-size: 16px;
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* Smooth effect */
+}
+
+#stats:hover {
+    color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
 }
