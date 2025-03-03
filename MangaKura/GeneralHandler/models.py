@@ -5,17 +5,18 @@ from django.contrib.auth.models import User
 # Like, a user does not link a manga from a general database, he simply "creates" a new manga each time, just make sure that it exists because else it's a useless service!
 class UserToManga(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    manga_title = models.CharField(max_length=255)
+    manga_title = models.CharField(max_length=100)
     animeclick_url = models.URLField(blank=True, null=True)
     single_volume_price = models.FloatField(default=0.0)
     whole_series_price = models.FloatField(default=0.0, blank=True)
-    owned_volumes = models.CharField(max_length=255)
-    physical_position = models.CharField(max_length=255)
-    volume_doubles = models.CharField(max_length=255, blank=True, null=True)
+    owned_volumes = models.CharField(max_length=100)
+    physical_position = models.CharField(max_length=100)
+    volume_doubles = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     all_read = models.BooleanField(default=False, blank=True)
     completed = models.BooleanField(default=False, blank=True)
     all_published = models.BooleanField(default=False, blank=True)
+    editor = models.CharField(max_length=30, null=True, blank=True)
     #rating = models.FloatField(deafult=0.0, blank=True)
     whole_series_price_calculated = models.FloatField(default=0.0, blank=True) # The user has to way to interact with this.
 
@@ -29,12 +30,12 @@ class UserToManga(models.Model):
 
 class UserToVariant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    variant_title = models.CharField(max_length=255)
-    related_manga_title = models.CharField(max_length=255)
+    variant_title = models.CharField(max_length=100)
+    related_manga_title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     stock_price = models.FloatField(blank=True, null=True)
     current_selling_price = models.FloatField(blank=True, null=True)
-    physical_position = models.CharField(max_length=255)
+    physical_position = models.CharField(max_length=100)
     number_of_owned_copies = models.IntegerField()
     copies_sold = models.JSONField(default=list)
     useful_links = models.JSONField(default=list)
@@ -60,7 +61,7 @@ class VariantImage(models.Model):
 # Please note that the "Wishlist" itself is not a real Object, rather it is obtained by querying for UserToWishlist where user=logged_user
 class UserToWishlistItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=100)
     price = models.FloatField(blank=True, null=True)
     release_date = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
