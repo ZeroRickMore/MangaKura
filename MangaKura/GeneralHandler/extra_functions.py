@@ -1,6 +1,8 @@
-from .models import UserToManga
+from .models import UserToManga, VariantImage, WishlistImage
 from django.http import HttpResponse
 from django.utils.html import format_html
+import os
+from pathlib import Path
 
 # This is the place where all extra functions are.
 # Generally, to access them, a REST API is used.
@@ -22,16 +24,16 @@ def api(func):
     return func  # Returns the function unchanged
 
 
-def build_html_with_content_in_pre_and_cool_api_css(content):
+def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API List', api_name='Available APIs'):
     # Full HTML response with a black background and content in gray background with green text
     html_content = format_html(
-        """
+        '''
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>API List</title>
+            <title>'''+title+'''</title>
             <style>
                 body {{ background-color: black; color: white; font-family: Arial, sans-serif; padding: 20px; }}
                 pre {{ background-color: #222; color: #0f0; padding: 10px; border-radius: 5px; }}
@@ -39,12 +41,12 @@ def build_html_with_content_in_pre_and_cool_api_css(content):
             </style>
         </head>
         <body>
-            <h1>Available APIs</h1>
+            <h1>'''+api_name+'''</h1>
             <pre>{}</pre>
         </body>
         </html>
-        """,
-        format_html(content)
+        ''',
+        format_html(content.replace('\n', '<br>'))
     )
 
     return html_content
@@ -63,7 +65,7 @@ def apis(request):
 def recalculate_own_manga_costs(request):
     print("\n====REQUESTED A CALL TO API recalculate_own_manga_costs====\n")
     all_mangas = UserToManga.objects.filter(user=request.user)
-    s_tot = ''
+    changed_counter = 0
     troublesome_entries = ''
     good_entries = ''
     separator = '\n=============================\n'
@@ -110,10 +112,77 @@ def recalculate_own_manga_costs(request):
             manga.whole_series_price_calculated = manga_cost
             manga.save()
             s = f"> CHANGED {manga.manga_title}'s calculated price value."
+            changed_counter += 1
         else:
             s = f"> SAME {manga.manga_title}'s calculated price value."
         print(s)
         good_entries += '\n' + s
         
-    content = troublesome_entries + separator + good_entries
-    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=content))
+    content = str(changed_counter) + ' Mangas have been changed.<br>' + troublesome_entries + separator + good_entries
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=content, title='Manga costs', api_name='Recalculate own Manga Costs'))
+
+
+@api
+def cleanup_unused_images(request):
+    # Considering this is a function that helps the DB delete unused images,
+    # no need to check for user authentication
+
+    # THIS IS TRUE SPAGHETTI CODE
+    script_path = Path(__file__).resolve()
+    mangakura_directory = script_path.parent.parent
+    mangakura_directory = str(mangakura_directory)
+
+    media_directory = os.path.join(mangakura_directory, 'media')
+
+    files_list = []
+
+    for root, dirs, files in os.walk(media_directory):
+        for f in files:
+            # Note that in DB it's in the form of /media/variant_images/WhatsApp_Image_2025-02-12_at_19.39.44.jpeg
+            files_list.append(os.path.join(root, f).replace(mangakura_directory, '').replace('\\', '/'))
+
+    all_images_objects = set(VariantImage.objects.all()) | set(WishlistImage.objects.all())
+    all_images_paths = []
+
+
+    for img_obj in all_images_objects:
+        all_images_paths.append(img_obj.image.url)
+
+    counter = 0
+    for img in all_images_paths:
+        if img in files_list:
+            counter += 1
+            files_list.remove(img)
+
+    # Now i need to remove the files in files_list
+    s = '<br>'
+    for file_to_remove in files_list:
+        # No way this works, but it does. No fancy path handling, the path has \ and / but it works i'm happy with it, cya.
+        file_to_remove_path = mangakura_directory + '/' + file_to_remove
+        s += '- ' + remove_file(file_to_remove_path) + '<br>'
+
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(
+        content=(f'I should remove {len(files_list)} files.\nImages are a total of {counter}.\n' + s),
+        title='Images Cleaner',
+        api_name='Cleanup Unused Images'
+        )
+    )
+
+
+def remove_file(path) -> str:
+    s = 'This is a default message...'
+    try:
+        os.remove(path)
+        s = f"File {path} deleted successfully"
+        print(s)
+    except FileNotFoundError:
+        s = f"File {path} not found"
+        print(s)
+    except PermissionError:
+        s = f"Permission to {path} denied"
+        print(s)
+    except Exception as e:
+        s = f"Error: {e}"
+        print(s)
+    finally:
+        return s
