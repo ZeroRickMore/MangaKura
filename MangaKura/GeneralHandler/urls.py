@@ -13,7 +13,6 @@ urlpatterns = [
     path('viewManga/', views.view_manga, name='view_manga'),
     path('manga/<int:manga_id>/edit/', views.edit_manga, name='edit_manga'),
     path('manga/<int:manga_id>/delete/', views.delete_manga, name='delete_manga'),
-    path('viewManga/sortBy/', views.view_mangas, name='view_mangas'),
     path('viewManga/<str:view_criteria>', views.view_mangas_with_criteria, name='view_mangas_with_criteria'),
 
     # ============================== VARIANT STUFF ==============================
@@ -23,7 +22,6 @@ urlpatterns = [
     path('viewVariant/', views.view_variant, name='view_variant'),
     path('variant/<int:variant_id>/edit/', views.edit_variant, name='edit_variant'),
     path('variant/<int:variant_id>/delete/', views.delete_variant, name='delete_variant'),
-    path('viewVariant/sortBy/', views.view_variants, name='view_variants'),
     path('media/variant_images/<str:image_path>/', views.serve_protected_variant_image, name='serve_protected_variant_image'),
 
     # ============================== WISHLIST STUFF ==============================
