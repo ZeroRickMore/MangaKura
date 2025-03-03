@@ -366,32 +366,21 @@ def view_mangas_with_criteria(request, view_criteria : str):
     match view_criteria:
         case 'all_read':
             user_manga = UserToManga.objects.filter(user=request.user, all_read=True).order_by('manga_title')
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'all_unread':
             user_manga = UserToManga.objects.filter(user=request.user, all_read=False).order_by('manga_title')   
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param) 
         case 'all_published':
             user_manga = UserToManga.objects.filter(user=request.user, all_published=True).order_by('manga_title')  
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'completed':
             user_manga = UserToManga.objects.filter(user=request.user, completed=True).order_by('manga_title')  
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'completed_unread':
             user_manga = UserToManga.objects.filter(user=request.user, completed=True, all_read=False).order_by('manga_title')
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'uncompleted':
             user_manga = UserToManga.objects.filter(user=request.user, completed=False).order_by('manga_title')
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
         case 'published_uncompleted':
             user_manga = UserToManga.objects.filter(user=request.user, all_published=True, completed=False).order_by('manga_title')
-            if sort_param:
-                return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
+
+    if sort_param:
+        return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga}) # All good, sort_param did not get used!
 
