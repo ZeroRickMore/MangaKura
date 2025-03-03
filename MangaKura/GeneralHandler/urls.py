@@ -37,7 +37,8 @@ urlpatterns = [
     # ============================== EXTRA REST API STUFF ========================
 
     path('apis', extra_functions.apis),
-    path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs)
+    path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs),
+    path('api/cleanup_unused_images', extra_functions.cleanup_unused_images),
 
 ]
 
