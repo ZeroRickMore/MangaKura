@@ -20,10 +20,9 @@
 
         <!-- Location Buttons -->
         Go to:
-        <br>    <br>
+        <br>
         {% for location, variants in sorted_groups %}
-            <button onclick="window.location.href='#{{ location }}'">{{ location }}</button>
-            <br>    <br>
+            <a href="#{{ location }}" id="stats">{{ location }} </a>,
         {% endfor %}
     </div>
 
