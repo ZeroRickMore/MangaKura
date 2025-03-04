@@ -350,7 +350,8 @@ def view_mangas_with_criteria(request, view_criteria : str):
 
                     return render(request, "user_manga_list_location_sorted.html", {
                         "sorted_groups": sorted_groups, 
-                        "error_msg": error_msg, 
+                        "error_msg": error_msg,
+                        "selection_type": view_criteria.replace("_", " ").title(),
                         }
                     )
             
@@ -382,7 +383,7 @@ def view_mangas_with_criteria(request, view_criteria : str):
     if sort_param:
         return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
 
-    return render(request, 'user_manga_list.html', {'user_manga': user_manga}) # All good, sort_param did not get used!
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'selection_type': view_criteria.replace("_", " ").title()}) # All good, sort_param did not get used!
 
 
 

@@ -3,7 +3,7 @@
 {% block content %}
     {{ error_msg }}
     
-    <h2>Your Manga List</h2>
+    <h2>Your Manga List {% if selection_type %} - {{ selection_type }} {% endif %}</h2>
 
     {% if stats %}
     Statistics: <br>
