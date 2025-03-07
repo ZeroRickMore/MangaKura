@@ -339,7 +339,7 @@ def view_mangas_with_criteria(request, view_criteria : str):
     
     if sort_param:
         sort_param = sort_param.lower()
-
+    
         if sort_param not in ALLOWED_MANGA_SORTS:
             return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
         
