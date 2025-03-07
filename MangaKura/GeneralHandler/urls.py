@@ -4,6 +4,7 @@ from . import views
 from . import extra_functions
 
 urlpatterns = [
+
     path('search/<str:category>/', views.search_view, name='search'),
 
     # ============================== MANGA STUFF ==============================
@@ -40,13 +41,3 @@ urlpatterns = [
     path('api/cleanup_unused_images', extra_functions.cleanup_unused_images),
 
 ]
-
-
-
-
-#from django.conf import settings
-#from django.conf.urls.static import static
-
-# Serve media files in development (only works if DEBUG=True)
-# if settings.DEBUG:
-#    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
