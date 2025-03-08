@@ -19,7 +19,7 @@
                 <!-- Display Images -->
                 <div class="variant-images">
                     {% for image in wishlist_item.images.all %}
-                        <img src="{{ image.image.url }}" alt="Image for {{ wishlist_item.title }}" class="variant-image">
+                        <img src="{{ image.image.url }}" alt="Image for {{ wishlist_item.title }}" class="variant-image" loading="lazy">
                     {% empty %}
                         <p>No images available for this Wishlist item.</p>
                     {% endfor %}
