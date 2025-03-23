@@ -476,7 +476,7 @@ def view_mangas_with_criteria(request, view_criteria : str):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def view_variant(request):
+def view_variant_list(request):
 
     # If user used ?sort=something
     # ════════════════════════════════════════════════════════════════════════════════
@@ -491,7 +491,7 @@ def view_variant(request):
         
         match sort_param:
             case 'location':
-                return view_variants_location_sorted(request)
+                return view_variant_lists_location_sorted(request)
     # ════════════════════════════════════════════════════════════════════════════════
 
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
@@ -542,7 +542,7 @@ sort_order = [
 ]
 
 @login_required
-def view_variants_location_sorted(request):
+def view_variant_lists_location_sorted(request):
 
     variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title')
 
@@ -814,7 +814,7 @@ def delete_variant(request, variant_id):
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
     if request.method == "POST":
         variant.delete()
-        return redirect('view_variant')  # Redirect to user's dashboard after deletion
+        return redirect('view_variant_list')  # Redirect to user's dashboard after deletion
     return render(request, 'delete_variant.html', {'variant': variant})
 
 
