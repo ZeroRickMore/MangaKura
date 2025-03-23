@@ -42,10 +42,10 @@ def check_is_superuser(user) -> bool:
 
 def is_main_alive(url=GLOBAL_SETTINGS.MAIN_WEBSITE_URL, timeout=1.5) -> bool:
 
-    print(GLOBAL_SETTINGS.OFFLINE)
     if GLOBAL_SETTINGS.OFFLINE:
         return False
 
+    # THIS IS NECESSARY! I want to be able to do some stuff, such as registering, if and only if the main service is online.s
     try:
         requests.head(url=url, verify=False, timeout=timeout) # Head method for less overhead
         return True
