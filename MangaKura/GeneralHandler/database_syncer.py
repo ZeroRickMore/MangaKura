@@ -4,7 +4,7 @@ import json
 from django.apps import apps
 from MangaKura import settings as GLOBAL_SETTINGS
 import requests
-from django.db import connection
+from django.db import connections
 from django.db.utils import IntegrityError
 
 #KEYVALUE_SEPARATOR = '/__KEYVAL__/'
@@ -21,7 +21,8 @@ def get_column_names_of_a_model(model=None) -> list[str]:
 
 def get_dict_of_a_model_in_db(model : models.Model = None, 
                               primary_key : list[str] = None,
-                              as_json = False,
+                              as_json : bool = False,
+                              using_database : str = None,
     ) -> tuple[str , dict[tuple[list[str] , list[str]]]]:
     '''
     Given a model, returns the name of the DB table of the given model, 
@@ -55,6 +56,9 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
                                                                                 'user_id': 1}}
     
     '''
+    
+    if not using_database:
+        raise Exception("Give a db to use.")
 
     # Initial arg checks
     if not issubclass(model, models.Model):
@@ -63,13 +67,15 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
     if not isinstance(primary_key, list):
         raise Exception("Please pass a list.")
 
+    if not isinstance(as_json, bool) or not isinstance(using_database, str):
+        raise Exception("Something went wrong.")
 
     # Create the dict
     all_items_dict = {}
     all_items_dict['Model_Name'] = model._meta.db_table
 
     # Gather all the objects in db
-    all_objects = model.objects.all()
+    all_objects = model.objects.using(using_database).all() # This will raise an exception is the db does not exist
 
     # Gather all the column values in order
     all_column_values = all_objects.values() # All column values
@@ -120,7 +126,8 @@ def get_model_from_table(table_name, app_label):
 
 def interpret_dict_of_a_model_in_db(input_dict : dict, 
                                from_json : bool = True,
-                               app_label='GeneralHandler') -> tuple[str, models.Model, int, dict]:
+                               app_label : str ='GeneralHandler',
+                               using_database : str = None) -> tuple[str, models.Model, int, dict]:
     '''
     First call get_dict_of_a_model_in_db() and then give the output here.
 
@@ -141,6 +148,9 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
     }
     '''
 
+    if not using_database:
+        raise Exception("Give a db to use.")
+
     if from_json:
         input_dict = json.loads(input_dict)
 
@@ -156,7 +166,7 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
         raise Exception(f"Model {input_dict['Model_Name']} not found")
 
     # Find next autoincrement id. No need to check for table_name's correctness as it's already checked if no models.Model is found
-    with connection.cursor() as cursor:
+    with connections[using_database].cursor() as cursor:
         cursor.execute("SELECT seq FROM sqlite_sequence WHERE name = %s", [table_name])
         result = cursor.fetchone()
         next_id = result[0] + 1  # The next value is the current value + 1. Note that even if it's zero, the result "0" is returned so no need to check for a result to exist.
@@ -167,12 +177,16 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
     
 
 
-def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict):
+def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict, using_database : str = None):
     '''
     First call interpret_dict_of_a_model_in_db() and then this
     '''
+
+    if not using_database:
+        raise Exception("Give a db to use.")
+
     # Type check
-    if not isinstance(table_name, str) or not issubclass(model, models.Model) or not isinstance(next_id, int) or not isinstance(input_dict, dict):
+    if not isinstance(table_name, str) or not issubclass(model, models.Model) or not isinstance(next_id, int) or not isinstance(input_dict, dict) or not isinstance(using_database, str):
         raise Exception("Something went wrong.")
     
     stats = ''
@@ -206,7 +220,7 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
 
         query = f"INSERT INTO {table_name} ({column_names_in_order}) VALUES ({f"{'%s,'*len(column_values_in_order)}"[:-1]})"
 
-        with connection.cursor() as cursor:
+        with connections[using_database].cursor() as cursor:
             try:
                 cursor.execute(query, column_values_in_order)
                 s = f'Added {entry['title']} to DB.' 
