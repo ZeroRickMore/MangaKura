@@ -164,3 +164,4 @@ MangaKura/db.sqlite3
 MangaKura/GeneralHandler/test.py
 *.zip
 /Backups
+MangaKura/local_db.sqlite3
