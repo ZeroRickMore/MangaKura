@@ -12,14 +12,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # =====================================================
 # APPLICATION SETTINGS
 # =====================================================
+LAZY = False # True if avoid computational-heavy requests like calculating manga stats. Can be changed by running with 'lazy' in args
+OFFLINE = False # True if offline. Can be changed by running with 'offline' in args
 
-# manage.py is the first to launch, and check if I am on phone.
-# For my personal use, I launch it on phone by launching manage.py with arg 'lazy' as second arg
-LAZY = False
+MAIN_WEBSITE_URL = os.getenv('MAIN_WEBSITE_URL') # Used to check if the main site is alive or not
+
 
 
 # =====================================================

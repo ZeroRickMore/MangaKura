@@ -5,7 +5,7 @@ import os
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
-    sys.argv = ['./manage.py', 'lazy', 'runserver']
+    sys.argv = ['./manage.py', 'runserver', 'lazy']
     manage.main()
 
 
