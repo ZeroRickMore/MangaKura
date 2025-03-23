@@ -20,10 +20,10 @@
                         <button type="submit" class="logout-button">Logout</button>
                     </form> -->
                     <!-- Search Bar -->
-                    <form method="get" action="{% url 'search' 'Any' %}" class="search-container">
+                    <form method="get" action="{% url 'search' %}" class="search-container">
                         <div id="search-bar-horizontalizer">
                             <input type="text" name="q" placeholder="Type something here..." required>
-                            <select name="category" id="search-category" onchange="updateSearchAction()">
+                            <select name="category" id="search-category">
                                 <option value="Any" selected>Any</option>
                                 <option value="Manga">Manga</option>
                                 <option value="Variant">Variant</option>
@@ -66,14 +66,5 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-
-    <script>
-        function updateSearchAction() {
-            let category = document.getElementById("search-category").value;
-            let form = document.querySelector(".search-container");
-            form.action = `/search/${category}`;
-        }
-    </script>
-
 </body>
 </html>
