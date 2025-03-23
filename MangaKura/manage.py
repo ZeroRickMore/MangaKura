@@ -22,7 +22,7 @@ def main():
         # Consume the argument and then run the program normally
         sys.argv.remove('lazy')
         os.environ['LAZY'] = "1"
-        print("\t]RUNNING AS LAZY")
+        print("\t] RUNNING AS LAZY")
         print("\n")
 
     if 'offline' in sys.argv:
@@ -30,7 +30,7 @@ def main():
         # Consume the argument and then run the program normally
         sys.argv.remove('offline')
         os.environ['OFFLINE'] = "1"
-        print("\t]RUNNING AS OFFLINE")
+        print("\t] RUNNING AS OFFLINE")
         print("\n")
 
      
