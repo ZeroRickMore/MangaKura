@@ -5,12 +5,12 @@ import os
 from pathlib import Path
 from django.views.decorators.csrf import csrf_exempt
 from MangaKura import settings as GLOBAL_SETTINGS
-from django.db import connection
+from django.db import connections
 from django.db.utils import IntegrityError
 import requests
 from . import database_syncer
 
-TURN_OFF_SUPERUSER_CHECK = True
+TURN_OFF_SUPERUSER_CHECK = False
 
 # This is the place where all extra functions are.
 # Generally, to access them, a REST API is used.
@@ -259,6 +259,9 @@ def execute_sql_raw_query_on_db(request):
     if request.method == 'GET':
         return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=r'''<h2>Execute Raw SQL Query</h2>
                                             <form action="/api/execute_sql_raw_query_on_db" method="POST">
+                                                <label for="db">DB:</label>
+                                                <textarea id="query" name="db" value="default" rows="1" cols="50"></textarea><br><br>
+                                                <label for="query">QUERY:</label>
                                                 <textarea id="query" name="query" rows="5" cols="50" required></textarea><br><br>
                                                 <button type="submit">Execute</button>
                                             </form>''',
@@ -267,8 +270,9 @@ def execute_sql_raw_query_on_db(request):
                             )
     
     elif request.method == 'POST':
+        db = request.POST.get("db")
         data = request.POST.get("query")  # Get SQL query from
-        with connection.cursor() as cursor:
+        with connections[db].cursor() as cursor:
             try:
                 cursor.execute(data)
             except IntegrityError as e:
@@ -299,70 +303,49 @@ def execute_sql_raw_query_on_db(request):
 
 
 
-
 @api
 def testing(request):
-    def test_get_dict():
-        return database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content="Want a coffee?",
+                                                                        title="Very empty land...",
+                                                                        api_name="Nothing to test here..."))
 
-    
-    def test_read_dict():
-        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
-
-        return database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
-
-    def test_update():
-        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json, using_database=using_database)
-        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database=using_database)
-        return '<br>'.join(list(database_syncer.update_own_db_table(*args, using_database=using_database)))
-        
-
-    def test_update_single():
-        input_dict =   {'OBJ18': {  'copies_to_buy': None,
-                                    'description': 'Ho qualche volume, vorrei averceli tutti!\r\n'
-                                                    'Sarebbe figo...',
-                                    'id': 26,
-                                    'price': 6.0,
-                                    'release_date': None,
-                                    'title': 'The Walking Dead Color Edition 500 Copie Tedesco (serie '
-                                                'completa)',
-                                    'useful_links': ['https://saldapress.com/ricerca/s/model_AllTypeOfProducts/lingua_It/allpsearch_the%20walking%20dead/ptype_0/autore_388/categoria_20/promo_0/bundles_0/cartagiovani_0/anteprima_0/autografo_0/prezzo_0%7C%7C464/numresult_30/page_0/'],
-                                    'user_id': 1},
-        }
-        
-        return database_syncer.update_own_db_table(table_name='GeneralHandler_usertowishlistitem', model=UserToWishlistItem, next_id=30, input_dict=input_dict)
-
-    as_json = True
-    using_database = 'default'
-
-    if not as_json:
-        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()), content_type="application/json")
-    
-    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()))
 
 @api
-def sync_databases(request):
+def update_main_database(request):
 
     # ESSENTIAL CHECK !
     if not check_is_superuser(request.user):
         return HttpResponse(YOU_ARE_NOT_SUPERUSER_MAD_RESPONSE)
     
-    if not is_main_alive():
-        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(
-            content="The main webserver is offline, you cannot execute this request now.",
-            title="Cannot execute operation",
-            api_name="Cannot execute operation",
-        ))
+    # Times have changed...
+    #if not is_main_alive():
+    #    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(
+    #        content="The main webserver is offline, useless to execute this request now.",
+    #        title="Cannot execute operation",
+    #        api_name="Cannot execute operation",
+    #    ))
+
+    as_json = False
+
+    # Load the table data from the local db
+    json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, as_json=as_json, using_database='local')
+    
+    # Interpret the table data and get next_id from the default table
+    args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database='default')
+    
+    # And sync by adding in my own default db
+    content = database_syncer.update_own_db_table(*args, using_database='default')
+
+    # Return for user feedback
+    if as_json:
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=content, title='Update DB', api_name='Update Main Database'), content_type="application/json",)
+    
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content))
 
 
-    TABLES_TO_SYNC = [
-        'GeneralHandler_usertoextrainfos',
-        'GeneralHandler_usertomanga',
-        'GeneralHandler_usertovariant',
-        'GeneralHandler_usertowishlistitem',
-        'GeneralHandler_variantimage',
-        'GeneralHandler_wishlistimage',
-    ]
+
+
+    
 
 
 
