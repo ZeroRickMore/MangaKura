@@ -94,7 +94,7 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
         
         key = f"OBJ{i}"
         i += 1
-        
+
         # All useless... 
         #for k_name in primary_key:
         #    value = entry[k_name]
@@ -232,4 +232,51 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
             
             #print(s)
 
-    return stats, "Added - "+str(added), "Skipped - "+str(skipped)
+    return '<br>'.join([stats, "Added - "+str(added), "Skipped - "+str(skipped)])
+
+
+
+
+'''
+Put into extra_functions if necessary
+
+@api
+def testing(request):
+    def test_get_dict():
+        return database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, as_json=as_json)
+
+    
+    def test_read_dict():
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, as_json=as_json)
+
+        return database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
+
+    def test_update():
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, as_json=as_json, using_database=using_database)
+        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database=using_database)
+        return database_syncer.update_own_db_table(*args, using_database=using_database)
+        
+
+    def test_update_single():
+        input_dict =   {'OBJ18': {  'copies_to_buy': None,
+                                    'description': 'Ho qualche volume, vorrei averceli tutti!\r\n'
+                                                    'Sarebbe figo...',
+                                    'id': 26,
+                                    'price': 6.0,
+                                    'release_date': None,
+                                    'title': 'The Walking Dead Color Edition 500 Copie Tedesco (serie '
+                                                'completa)',
+                                    'useful_links': ['https://saldapress.com/ricerca/s/model_AllTypeOfProducts/lingua_It/allpsearch_the%20walking%20dead/ptype_0/autore_388/categoria_20/promo_0/bundles_0/cartagiovani_0/anteprima_0/autografo_0/prezzo_0%7C%7C464/numresult_30/page_0/'],
+                                    'user_id': 1},
+        }
+        
+        return database_syncer.update_own_db_table(table_name='GeneralHandler_usertowishlistitem', model=UserToWishlistItem, next_id=30, input_dict=input_dict)
+
+    as_json = True
+    using_database = 'default'
+
+    if not as_json:
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()), content_type="application/json")
+    
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()))
+'''
