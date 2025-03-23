@@ -170,6 +170,33 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
 
     return table_name, model, next_id, input_dict
 
+def get_correct_title(entry):
+    '''
+    It looks bad, but it works an it gives the best handling possible.
+    '''
+    # 
+    try:
+        return entry['manga_title']
+    except:
+        pass
+
+    try:
+        return entry['variant_title']
+    except:
+        pass    
+
+    try:
+        return entry['image']
+    except:
+        pass   
+
+    try:
+        return entry['title']
+    except:
+        pass  
+
+    return None 
+
 
 
 def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict, using_database : str = None):
@@ -220,12 +247,12 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
         with connections[using_database].cursor() as cursor:
             try:
                 cursor.execute(query, column_values_in_order)
-                s = f'Added {entry['title']} to DB.' 
+                s = f'Added {get_correct_title(entry=entry)} to DB.' 
                 stats += s+'<br>'
                 added += 1
                 next_id += 1
             except IntegrityError as e:
-                s = f"Item {entry['title']} -> {e}"
+                s = f"Item {get_correct_title(entry=entry)} -> {e}"
 
                 # This is the error type
                 # UNIQUE constraint failed: GeneralHandler_usertowishlistitem.user_id, GeneralHandler_usertowishlistitem.title
@@ -253,6 +280,9 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
 
             
             #print(s)
+
+    with connections[using_database].cursor() as cursor:
+        cursor.execute("UPDATE GeneralHandler_usertoextrainfos set MANGA_STATS_TO_BE_MODIFIED=1" )
 
     return '<br>'.join([stats, "Added - "+str(added), "updated - "+str(updated)])
 
