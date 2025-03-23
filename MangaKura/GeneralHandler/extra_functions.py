@@ -312,9 +312,9 @@ def testing(request):
         return database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
 
     def test_update():
-        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
-        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
-        return '<br>'.join(list(database_syncer.update_own_db_table(*args)))
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json, using_database=using_database)
+        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database=using_database)
+        return '<br>'.join(list(database_syncer.update_own_db_table(*args, using_database=using_database)))
         
 
     def test_update_single():
@@ -331,10 +331,9 @@ def testing(request):
         }
         
         return database_syncer.update_own_db_table(table_name='GeneralHandler_usertowishlistitem', model=UserToWishlistItem, next_id=30, input_dict=input_dict)
-        
-
 
     as_json = True
+    using_database = 'default'
 
     if not as_json:
         return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()), content_type="application/json")
