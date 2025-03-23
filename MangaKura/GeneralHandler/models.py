@@ -20,6 +20,12 @@ class UserToManga(models.Model):
     #rating = models.FloatField(deafult=0.0, blank=True)
     whole_series_price_calculated = models.FloatField(default=0.0, blank=True) # The user has to way to interact with this.
 
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'manga_title'], name='unique_user_manga')
+        ]
+
     def __str__(self):
         return f"{self.manga_title}"
 
@@ -42,6 +48,12 @@ class UserToVariant(models.Model):
     vinted_description = models.TextField(blank=True, null=True)
     to_sell = models.BooleanField(default=False)
     #rating = models.FloatField(deafult=0.0, blank=True)
+
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'variant_title'], name='unique_user_variant')
+        ]
 
     def __str__(self):
         return self.variant_title
@@ -67,6 +79,12 @@ class UserToWishlistItem(models.Model):
     description = models.TextField(blank=True, null=True)
     copies_to_buy = models.IntegerField(blank=True, null=True)
     useful_links = models.JSONField(default=list)
+    
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'title'], name='unique_user_wishlistitem')
+        ]
 
     def __str__(self):
         return self.title
@@ -83,7 +101,7 @@ class WishlistImage(models.Model):
 
 
 class UserToExtraInfos(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, unique=True)
     MANGA_STATS_TO_BE_MODIFIED = models.BooleanField(default=True)
     manga_stats = models.JSONField(null=True, blank=True)
 
