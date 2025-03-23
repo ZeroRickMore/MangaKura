@@ -11,7 +11,7 @@
     <!-- Sort by Dropdown -->
     <div class="sort-options">
         <label for="sort">Sort by:</label>
-        <button onclick="window.location.href='http://localhost:8000/viewVariant/sortBy?sort=Location'">Location</button>
+        <button onclick="window.location.href='{{ request.path }}?sort=location'">Location</button>
     </div>
 
     
@@ -24,7 +24,7 @@
                 <!-- Display Images -->
                 <div class="variant-images">
                     {% for image in variant.images.all %}
-                        <img src="{{ image.image.url }}" alt="Image for {{ variant.variant_title }}" class="variant-image">
+                        <img src="{{ image.image.url }}" alt="Image for {{ variant.variant_title }}" class="variant-image" loading="lazy">
                     {% empty %}
                         <p>No images available for this variant.</p>
                     {% endfor %}
