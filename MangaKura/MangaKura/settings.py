@@ -12,15 +12,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-import manage
+from dotenv import load_dotenv
 
 # =====================================================
 # APPLICATION SETTINGS
 # =====================================================
+LAZY = os.getenv('LAZY')=="1" # True if avoid computational-heavy requests like calculating manga stats. Can be changed by running with 'lazy' in args
+OFFLINE = os.getenv('OFFLINE')=="1" # True if offline. Can be changed by running with 'offline' in args
 
-# manage.py is the first to launch, and check if I am on phone.
-# For my personal use, I launch it on phone by launching manage.py without args.
-LAZY = os.getenv("IS_MOBILE") == "1" # If on mobile, skips default heavy calculations like manga stats. 
+load_dotenv()
+MAIN_WEBSITE_URL = os.getenv('MAIN_WEBSITE_URL') # Used to check if the main site is alive or not
+
 
 
 # =====================================================
@@ -33,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wqi)mrtc9h*q3tsh1#v+p0b+yy*6q1$)&az1%ds!r-dx=^1sy+'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 
 LOGOUT_REDIRECT_URL = 'login'  # Redirect after logout
@@ -109,6 +111,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    } ,
+    'local': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'local_db.sqlite3',      
     }
 }
 

@@ -15,13 +15,26 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     
-    # When executing from mobile, I simply run this script with no args.
-    # That being said, we consider the scenario where if len(sys.argv) == 1, we are on mobile, straight up.
-    # So, we go into LAZY mode, which is a mode that skips heavy calculations like the manga stats, to be mobile-friendly.
-        
-    if len(sys.argv) == 1:
-        # os.environ["IS_MOBILE"] = "1" # TODO Do I still need it?
-        sys.argv.append('runserver')
+    # START OF EXTRA ARGS HANDLING ======================================================
+
+    if 'lazy' in sys.argv:
+        print("\n")
+        # Consume the argument and then run the program normally
+        sys.argv.remove('lazy')
+        os.environ['LAZY'] = "1"
+        print("\t] RUNNING AS LAZY")
+        print("\n")
+
+    if 'offline' in sys.argv:
+        print("\n")
+        # Consume the argument and then run the program normally
+        sys.argv.remove('offline')
+        os.environ['OFFLINE'] = "1"
+        print("\t] RUNNING AS OFFLINE")
+        print("\n")
+
+     
+    # END OF EXTRA ARGS HANDLING ======================================================
 
     execute_from_command_line(sys.argv)
 

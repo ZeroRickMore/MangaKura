@@ -20,6 +20,12 @@ class UserToManga(models.Model):
     #rating = models.FloatField(deafult=0.0, blank=True)
     whole_series_price_calculated = models.FloatField(default=0.0, blank=True) # The user has to way to interact with this.
 
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'manga_title'], name='unique_user_manga')
+        ]
+
     def __str__(self):
         return f"{self.manga_title}"
 
@@ -43,6 +49,12 @@ class UserToVariant(models.Model):
     to_sell = models.BooleanField(default=False)
     #rating = models.FloatField(deafult=0.0, blank=True)
 
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'variant_title'], name='unique_user_variant')
+        ]
+
     def __str__(self):
         return self.variant_title
 
@@ -50,7 +62,13 @@ class UserToVariant(models.Model):
 class VariantImage(models.Model):
     variant = models.ForeignKey(UserToVariant, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to='variant_images/')
-    
+
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['variant', 'image'], name='unique_image_variant')
+        ]
+
     def __str__(self):
         return f"Image for {self.variant.variant_title}"
 
@@ -67,6 +85,12 @@ class UserToWishlistItem(models.Model):
     description = models.TextField(blank=True, null=True)
     copies_to_buy = models.IntegerField(blank=True, null=True)
     useful_links = models.JSONField(default=list)
+    
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'title'], name='unique_user_wishlistitem')
+        ]
 
     def __str__(self):
         return self.title
@@ -75,15 +99,21 @@ class UserToWishlistItem(models.Model):
 
 class WishlistImage(models.Model):
     wishlist_item = models.ForeignKey(UserToWishlistItem, related_name="images", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='wishlist_images/')
-    
+    image = models.ImageField(upload_to='wishlist_images/', unique=True)
+
+    class Meta:
+        # The key is the ID for better django db handling, but I do not want duplicates of this kind.
+        constraints = [
+            models.UniqueConstraint(fields=['wishlist_item', 'image'], name='unique_image_wishlistitem')
+        ]
+
     def __str__(self):
         return f"Image for {self.wishlist_item.title}"
-    
+
 
 
 class UserToExtraInfos(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     MANGA_STATS_TO_BE_MODIFIED = models.BooleanField(default=True)
     manga_stats = models.JSONField(null=True, blank=True)
 
