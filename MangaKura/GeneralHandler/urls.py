@@ -43,5 +43,5 @@ urlpatterns = [
     # path('api/create_user_extra_infos_empty_entry_if_not_exists', extra_functions.create_user_extra_infos_empty_entry_if_not_exists),
     path('api/execute_sql_raw_query_on_db', extra_functions.execute_sql_raw_query_on_db),
     path('api/testing', extra_functions.testing),
-    path('api/sync_databases', extra_functions.sync_databases),
+    path('api/update_main_database', extra_functions.update_main_database),
 ]
