@@ -14,7 +14,7 @@
                     <!-- Display Images -->
                     <div class="variant-images">
                         {% for image in item.images.all %}
-                            <img src="{{ image.image.url }}" alt="Image for {{ item.variant_title }}" class="variant-image">
+                            <img src="{{ image.image.url }}" alt="Image for {{ item.variant_title }}" class="variant-image" loading="lazy">
                         {% empty %}
                             <p>No images available for this variant.</p>
                         {% endfor %}
