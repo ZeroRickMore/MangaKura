@@ -253,6 +253,22 @@ def wishlist_item_detail(request, wishlist_item_id):
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                    VISUALIZE METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 def set_manga_stats_to_be_modified(user, set_to : bool):
     entry = UserToExtraInfos.objects.get(user=user)
     entry.MANGA_STATS_TO_BE_MODIFIED = set_to
@@ -395,6 +411,7 @@ def view_manga(request): #
 
     user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     stats = build_mangas_stats(user=request.user, user_manga_list=user_manga)
+    #stats = build_mangas_stats(user_manga_list=user_manga)
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 

@@ -1,3 +1,4 @@
+
 from .models import *
 from django.http import HttpResponse
 from django.utils.html import format_html
@@ -30,8 +31,6 @@ def check_is_superuser(user):
     Takes a request.user as parameter and checks is_superuser
     '''
     return user.is_superuser
-
-
 
 def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API List', api_name='Available APIs'):
     # Full HTML response with a black background and content in gray background with green text
@@ -270,3 +269,4 @@ def execute_sql_raw_query_on_db(request):
 
     update auth_user set is_superuser = 1 where username='ZeroKuraManga'
     '''
+        return s
