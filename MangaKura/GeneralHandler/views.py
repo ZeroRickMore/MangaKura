@@ -392,7 +392,7 @@ ALLOWED_MANGA_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'comp
 
 
 @login_required
-def view_manga(request): # 
+def view_manga_list(request): # 
 
     # If user used ?sort=something
     # ════════════════════════════════════════════════════════════════════════════════
@@ -778,7 +778,7 @@ def delete_manga(request, manga_id):
     if request.method == "POST":
         manga.delete()
         set_manga_stats_to_be_modified(user=request.user, set_to=True) # Manga deleted? Stats to be recalculated !
-        return redirect('view_manga')
+        return redirect('view_manga_list')
     return render(request, 'delete_manga.html', {'manga': manga})
 
 
