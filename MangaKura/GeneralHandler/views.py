@@ -1,14 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.html import format_html
-from .forms import MangaForm, VariantImageFormSet, WishlistImageFormSet, UserToVariantForm, CopiesSoldForm, WishlistItemForm
-from .models import UserToVariant, VariantImage
+from .forms import *
+from .models import *
 from collections import defaultdict
 from django.http import FileResponse, HttpResponse
 from django.conf import settings
 import os
-from .models import UserToManga, UserToVariant, UserToWishlistItem, WishlistImage
+from MangaKura import settings as GLOBAL_SETTINGS
 
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                     INSERT METHODS                                      ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 # Link a new manga to the logged in User
@@ -21,6 +34,7 @@ def insert_manga(request):
             manga.manga_title = manga.manga_title[0].upper() +  manga.manga_title[1:] # Capitalize first letter
 
             # Calculate manga cost ========================================================================
+            
             manga_cost = manga.whole_series_price
             if manga_cost > 0:
                 manga_cost = manga_cost
@@ -48,6 +62,8 @@ def insert_manga(request):
             manga.whole_series_price_calculated = manga_cost
             # ==============================================================================================
 
+            set_manga_stats_to_be_modified(user=request.user, set_to=True) # New manga inserted? Stats to be recalculated !
+
             manga.save()
             return redirect('manga_detail', manga_id=manga.id)
     else:
@@ -56,6 +72,11 @@ def insert_manga(request):
     return render(request, 'insert_manga.html', {'form': form})
 
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 # Link a new Variant to the logged in User
 @login_required
@@ -112,6 +133,10 @@ def insert_variant(request):
 
 
 
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 # Link a new manga to the logged in User
 def insert_wishlist_item(request):
@@ -138,8 +163,25 @@ def insert_wishlist_item(request):
 
 
 
-# ====================== SINGLE ELEMENT VISUALIZE ======================
 
+
+
+
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                SINGLE ELEMENT VISUALIZE                                 ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def variant_detail(request, variant_id):
@@ -159,12 +201,22 @@ def variant_detail(request, variant_id):
     })
 
 
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def manga_detail(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
     manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))  if manga.description else ''
     return render(request, 'manga_detail.html', {'manga': manga})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def wishlist_item_detail(request, wishlist_item_id):
@@ -184,15 +236,92 @@ def wishlist_item_detail(request, wishlist_item_id):
 
 
 
-# =================== VISUALIZE METHODS ============================
 
-def build_mangas_stats(user_manga_list):
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                    VISUALIZE METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
+def set_manga_stats_to_be_modified(user, set_to : bool):
+    entry = UserToExtraInfos.objects.get(user=user)
+    entry.MANGA_STATS_TO_BE_MODIFIED = set_to
+    entry.save()
+    #print(f"UPDATED ENTRY {entry} to MANGA_STATS_TO_BE_MODIFIED={set_to}")
+
+def check_if_manga_stats_to_be_calculated(user):
+    '''
+    user is a request.user object.
+    
+    Goes into the DB, and check if MANGA_STATS_TO_BE_MODIFIED of the user.
+    '''
+    try:
+        entry = UserToExtraInfos.objects.get(user=user)
+    except:
+        return HttpResponse(f"THIS IS EXTRA BAD. <br><br>WHY IS THERE NO EXTRA INFOS FOR THE USER WITH USERNAME {user.username} ???")
+    
+    MANGA_STATS_TO_BE_MODIFIED = entry.MANGA_STATS_TO_BE_MODIFIED
+
+    # DEBUG
+    #print(f"\n] MUST I MODIFY MANGA STATS FOR USER {user.username}? -> {MANGA_STATS_TO_BE_MODIFIED}\n")
+
+    return MANGA_STATS_TO_BE_MODIFIED
+
+def get_manga_stats_from_db(user):
+    '''
+    Returns the JSON object manga_stats as a dictionary on user=user in DB
+    '''
+    stats = dict(UserToExtraInfos.objects.get(user=user).manga_stats)
+    
+    # DEBUG
+    #print(f"\n] STATS FOR USER {user.username} are: \n===\n\n{stats}\n\n===\n")
+    return stats
+
+def update_db_on_manga_stats(user, manga_stats):
+    entry = UserToExtraInfos.objects.get(user=user)
+
+    #old_entry = entry # Pure DEBUG
+
+    entry.MANGA_STATS_TO_BE_MODIFIED = False
+    entry.manga_stats = manga_stats
+    entry.save()
+
+    # DEBUG
+    #new_entry = UserToExtraInfos.objects.get(user=user)
+    #print(f"OLD ENTRY: [ {old_entry} ] .\n NEW ENTRY: [ {new_entry} ]")
+
+
+
+# Computational-heavy method
+def build_mangas_stats(user, user_manga_list):
+
+    # TODO: Understand if this is still necessary after the DB entry for ExtraInfos.
+    #if GLOBAL_SETTINGS.LAZY:
+    #    return None
+    
+    if not check_if_manga_stats_to_be_calculated(user):
+        print("\n\t] CACHE HIT ON MANGA STATS !\n") # DEBUG
+        return get_manga_stats_from_db(user=user)
+    
+    print("\n\t] NO CACHE HIT ON MANGA STATS !\n") # DEBUG
+
     total_mangas = len(user_manga_list)
     read_mangas = 0
     completed_mangas = 0
     completed_but_unread_mangas = 0
     all_published_mangas = 0
     total_money_spent = 0.00
+    published_uncompleted = 0
 
     for manga in user_manga_list:
         manga : UserToManga
@@ -201,6 +330,7 @@ def build_mangas_stats(user_manga_list):
         completed_but_unread_mangas += int(manga.completed and not manga.all_read)
         all_published_mangas += int(manga.all_published)
         total_money_spent += manga.whole_series_price_calculated
+        published_uncompleted += int(manga.all_published and not manga.completed)
 
     stats = {
         'total_mangas' : total_mangas,
@@ -208,13 +338,26 @@ def build_mangas_stats(user_manga_list):
         'unread_mangas' : total_mangas - read_mangas,
         'completed_mangas' : completed_mangas,
         'completed_but_unread_mangas' : completed_but_unread_mangas,
+        'uncompleted_mangas' : total_mangas - completed_mangas,
         'all_published_mangas' : all_published_mangas,
+        'published_uncompleted' : published_uncompleted,
         'total_money_spent' : int(total_money_spent),
     }
 
+    update_db_on_manga_stats(user=user, manga_stats=stats)
     return stats
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 def build_variant_stats(user_variant_list):
+
+    if GLOBAL_SETTINGS.LAZY:
+        return None
+
     total_variants = len(user_variant_list)
 
     stats = {
@@ -224,19 +367,125 @@ def build_variant_stats(user_variant_list):
     return stats
 
 
-@login_required
-def view_manga(request):
-    user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
 
-    stats = build_mangas_stats(user_manga_list=user_manga)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+ALLOWED_MANGA_SORTS = ['location']
+ALLOWED_MANGA_VIEW_CRITERIAS = ['all_read', 'all_unread', 'all_published', 'completed', 'completed_unread', 'uncompleted', 'published_uncompleted']
+
+
+@login_required
+def view_manga(request): # 
+
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+
+        if sort_param not in ALLOWED_MANGA_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        match sort_param:
+            case 'location':
+                return view_mangas_location_sorted(request)
+    # ════════════════════════════════════════════════════════════════════════════════
+
+    user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
+    stats = build_mangas_stats(user=request.user, user_manga_list=user_manga)
 
     return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
 
+
+@login_required
+def view_mangas_with_criteria(request, view_criteria : str):
+
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+    
+        if sort_param not in ALLOWED_MANGA_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        def view_mangas_location_sorted_given_a_list_of_mangas(mangas_list, sort_param):
+            match sort_param:
+                case 'location':
+                    sorted_groups, error_msg = get_mangas_sorted_groups_and_error_msg_for_location(mangas_list=mangas_list)
+
+                    return render(request, "user_manga_list_location_sorted.html", {
+                        "sorted_groups": sorted_groups, 
+                        "error_msg": error_msg,
+                        "selection_type": view_criteria.replace("_", " ").title(),
+                        }
+                    )
+            
+            return HttpResponse(f'BAD REQUEST: You cannot use {view_criteria} as a view criteria! This should have been checked earlier though...', status=400)
+        
+    # ════════════════════════════════════════════════════════════════════════════════
+
+    view_criteria = view_criteria.lower()
+
+    if view_criteria not in ALLOWED_MANGA_VIEW_CRITERIAS: # BAD REQUEST
+        return HttpResponse(f'BAD REQUEST: You cannot use {view_criteria} as a view criteria!', status=400)
+    
+    match view_criteria:
+        case 'all_read':
+            user_manga = UserToManga.objects.filter(user=request.user, all_read=True).order_by('manga_title')
+        case 'all_unread':
+            user_manga = UserToManga.objects.filter(user=request.user, all_read=False).order_by('manga_title')   
+        case 'all_published':
+            user_manga = UserToManga.objects.filter(user=request.user, all_published=True).order_by('manga_title')  
+        case 'completed':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=True).order_by('manga_title')  
+        case 'completed_unread':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=True, all_read=False).order_by('manga_title')
+        case 'uncompleted':
+            user_manga = UserToManga.objects.filter(user=request.user, completed=False).order_by('manga_title')
+        case 'published_uncompleted':
+            user_manga = UserToManga.objects.filter(user=request.user, all_published=True, completed=False).order_by('manga_title')
+
+    if sort_param:
+        return view_mangas_location_sorted_given_a_list_of_mangas(mangas_list=user_manga, sort_param=sort_param)
+
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'selection_type': view_criteria.replace("_", " ").title()}) # All good, sort_param did not get used!
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def view_variant(request):
+
+    # If user used ?sort=something
+    # ════════════════════════════════════════════════════════════════════════════════
+    sort_param : str = request.GET.get('sort')  # Default to 'manga_title' if no sort parameter
+    
+    if sort_param:
+        sort_param = sort_param.lower()
+        ALLOWED_VARIANT_SORTS = ['location']
+
+        if sort_param not in ALLOWED_VARIANT_SORTS:
+            return HttpResponse(f'BAD REQUEST: You cannot use {sort_param} as a sort parameter!', status=400)
+        
+        match sort_param:
+            case 'location':
+                return view_variants_location_sorted(request)
+    # ════════════════════════════════════════════════════════════════════════════════
+
     user_variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title').prefetch_related('images')
     stats = build_variant_stats(user_variants)
     return render(request, 'user_variant_list.html', {'user_variants': user_variants, 'stats':stats})
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def view_wishlist(request):
@@ -244,36 +493,41 @@ def view_wishlist(request):
     return render(request, 'user_wishlist.html', {'user_wishlist': user_wishlist})
 
 
-# Sort by Location
-@login_required
-def view_variants(request):
-    sort_order = [
-        "Quadro sopra il PC",
-        "Mensola sopra PC 1",
-        "Mensola sopra PC 2",
-        "Libreria nera mensola 1",
-        "Libreria nera mensola 2",
-        "Libreria nera mensola 3",
-        "Libreria nera mensola 4",
-        "Libreria nera mensola 5",
-        "Mensola sopra termosifone 1",
-        "Mensola sopra termosifone 2",
-        "Mensola sopra termosifone 3",
-        "Scaffale pianoforte sx 1",
-        "Scaffale pianoforte sx 2",
-        "Scaffale pianoforte dx 1",
-        "Scaffale pianoforte dx 2",
-        "Mobile della scrivania 1",
-        "Mobile della scrivania 2",
-        "Mobile della scrivania 3",
-        "Mensola sopra il letto",
-        "Armadio del letto",
-        "Baule",
-        "All",
-        "?",
-    ]
 
-    variants = UserToVariant.objects.all().order_by('variant_title')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
+sort_order = [
+    "Quadro sopra il PC",
+    "Mensola sopra PC 1",
+    "Mensola sopra PC 2",
+    "Libreria nera mensola 1",
+    "Libreria nera mensola 2",
+    "Libreria nera mensola 3",
+    "Libreria nera mensola 4",
+    "Libreria nera mensola 5",
+    "Mensola sopra termosifone 1",
+    "Mensola sopra termosifone 2",
+    "Mensola sopra termosifone 3",
+    "Scaffale pianoforte sx 1",
+    "Scaffale pianoforte sx 2",
+    "Scaffale pianoforte dx 1",
+    "Scaffale pianoforte dx 2",
+    "Mobile della scrivania 1",
+    "Mobile della scrivania 2",
+    "Mobile della scrivania 3",
+    "Mensola sopra il letto",
+    "Armadio del letto",
+    "Baule",
+    "All",
+    "?",
+]
+
+@login_required
+def view_variants_location_sorted(request):
+
+    variants = UserToVariant.objects.filter(user=request.user).order_by('variant_title')
 
     variants_in_multiple_locations = []
     
@@ -359,41 +613,35 @@ def view_variants(request):
 
 
 
-@login_required
-def view_mangas(request):
-    sort_order = [
-        "Quadro sopra il PC",
-        "Mensola sopra PC 1",
-        "Mensola sopra PC 2",
-        "Libreria nera mensola 1",
-        "Libreria nera mensola 2",
-        "Libreria nera mensola 3",
-        "Libreria nera mensola 4",
-        "Libreria nera mensola 5",
-        "Mensola sopra termosifone 1",
-        "Mensola sopra termosifone 2",
-        "Mensola sopra termosifone 3",
-        "Scaffale pianoforte sx 1",
-        "Scaffale pianoforte sx 2",
-        "Scaffale pianoforte dx 1",
-        "Scaffale pianoforte dx 2",
-        "Mobile della scrivania 1",
-        "Mobile della scrivania 2",
-        "Mobile della scrivania 3",
-        "Mensola sopra il letto",
-        "Armadio del letto",
-        "Baule",
-        "All",
-        "?",
-    ]
 
-    mangas = UserToManga.objects.all().order_by('manga_title')
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
+@login_required
+def view_mangas_location_sorted(request):
+
+    mangas = UserToManga.objects.filter(user=request.user).order_by('manga_title')
     
+    sorted_groups, error_msg = get_mangas_sorted_groups_and_error_msg_for_location(mangas_list=mangas)
+
+    stats = build_mangas_stats(user_manga_list=mangas)
+    
+    return render(request, "user_manga_list_location_sorted.html", {
+        "sorted_groups": sorted_groups, 
+        "error_msg": error_msg, 
+        "stats":stats
+        }
+    )
+
+
+
+
+def get_mangas_sorted_groups_and_error_msg_for_location(mangas_list : list[UserToManga]) -> tuple[list[tuple[str, list[str]]], str]:
     mangas_in_multiple_locations = []
 
     # Group variants by location
     grouped_mangas = defaultdict(list)
-    for manga in mangas:
+    for manga in mangas_list:
         physical_positions = manga.physical_position.split(" | ")
 
         if len(physical_positions) > 1:
@@ -422,7 +670,7 @@ def view_mangas(request):
 
     duplicates = []
 
-    mangas_names = [_.manga_title for _ in mangas]
+    mangas_names = [_.manga_title for _ in mangas_list]
     
     for manga_name in mangas_names:
         if manga in duplicates:
@@ -469,14 +717,7 @@ def view_mangas(request):
         error_msg = 'ERRORS:\n' + error_msg
     # DEBUG AND CHECKS =================================================================
 
-    stats = build_mangas_stats(user_manga_list=mangas)
-    
-    return render(request, "user_manga_list_location_sorted.html", {
-        "sorted_groups": sorted_groups, 
-        "error_msg": error_msg, 
-        "stats":stats
-        }
-    )
+    return sorted_groups, error_msg
 
 
 
@@ -484,8 +725,16 @@ def view_mangas(request):
 
 
 
-# ==================== DELETE AND EDIT METHODS =========================
 
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                              DELETE AND EDIT METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_manga(request, manga_id):
@@ -494,22 +743,32 @@ def edit_manga(request, manga_id):
         form = MangaForm(request.POST, instance=manga)
         if form.is_valid():
             form.save()
+            set_manga_stats_to_be_modified(user=request.user, set_to=True) # Old manga edited? Stats to be recalculated !
             return redirect('manga_detail', manga_id=manga.id)
     else:
         form = MangaForm(instance=manga)
     return render(request, 'edit_manga.html', {'form': form})
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def delete_manga(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
     if request.method == "POST":
         manga.delete()
+        set_manga_stats_to_be_modified(user=request.user, set_to=True) # Manga deleted? Stats to be recalculated !
         return redirect('view_manga')
     return render(request, 'delete_manga.html', {'manga': manga})
 
 
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_variant(request, variant_id):
@@ -527,6 +786,12 @@ def edit_variant(request, variant_id):
     
     return render(request, 'edit_variant.html', {'form': form, 'formset': formset})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def delete_variant(request, variant_id):
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
@@ -538,6 +803,8 @@ def delete_variant(request, variant_id):
 
 
 
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def edit_wishlist_item(request, wishlist_item_id):
@@ -555,6 +822,12 @@ def edit_wishlist_item(request, wishlist_item_id):
     
     return render(request, 'edit_wishlist_item.html', {'form': form, 'formset': formset})
 
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+
 @login_required
 def delete_wishlist_item(request, wishlist_item_id):
     wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
@@ -566,7 +839,24 @@ def delete_wishlist_item(request, wishlist_item_id):
 
 
 
-# ====================== SEARCH METHODS ============================
+
+
+
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                   SEARCH METHODS                                        ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 def search_view(request, category):
     query = request.GET.get('q', '')
@@ -590,9 +880,22 @@ def search_view(request, category):
 
 
 
-    
 
-# ========================================
+
+
+
+
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                PROTECT IMAGE METHODS                                    ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def serve_protected_variant_image(request, image_path):
@@ -626,6 +929,10 @@ def serve_protected_variant_image(request, image_path):
     return FileResponse(open(file_path, 'rb'))
 
 
+
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
 def serve_protected_wishlist_item_image(request, image_path):
