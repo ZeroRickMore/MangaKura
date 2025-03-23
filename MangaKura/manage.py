@@ -2,6 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from MangaKura import settings as GLOBAL_SETTINGS
 
 def main():
     """Run administrative tasks."""
@@ -19,9 +20,12 @@ def main():
     # That being said, we consider the scenario where if len(sys.argv) == 1, we are on mobile, straight up.
     # So, we go into LAZY mode, which is a mode that skips heavy calculations like the manga stats, to be mobile-friendly.
         
-    if len(sys.argv) == 1:
-        # os.environ["IS_MOBILE"] = "1" # TODO Do I still need it?
-        sys.argv.append('runserver')
+    if len(sys.argv) >= 2:
+        if sys.argv[1] == 'lazy':
+            # Consume the argument and then run the program normally
+            GLOBAL_SETTINGS.LAZY = True
+            print("RUNNING AS LAZY")
+            sys.argv.remove('lazy')
 
     execute_from_command_line(sys.argv)
 
