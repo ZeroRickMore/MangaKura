@@ -5,10 +5,10 @@ from django.apps import apps
 from MangaKura import settings as GLOBAL_SETTINGS
 import requests
 from django.db import connection
+from django.db.utils import IntegrityError
 
-
-KEYVALUE_SEPARATOR = '/__KEYVAL__/'
-KEYKEY_SEPARATOR = '/__KEYKEY__/'
+#KEYVALUE_SEPARATOR = '/__KEYVAL__/'
+#KEYKEY_SEPARATOR = '/__KEYKEY__/'
 
 def get_column_names_of_a_model(model=None) -> list[str]:
 
@@ -75,6 +75,7 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
     all_column_values = all_objects.values() # All column values
 
     # Gather the keys
+    i = 0
     for entry in all_column_values: # Iterate over the db entries ordered by value
         entry : dict
 
@@ -85,13 +86,17 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
             except:
                 pass
         
-        key = ''
-
+        key = f"OBJ{i}"
+        i += 1
+        # All useless...
+        ''' 
         for k_name in primary_key:
             value = entry[k_name]
             key += k_name+KEYVALUE_SEPARATOR+str(value)+KEYKEY_SEPARATOR
 
+
         key = key[:-len(KEYKEY_SEPARATOR)] # Remove the last separator
+        '''
 
         all_items_dict[key] = entry
 
@@ -122,16 +127,18 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
 
     The dict must be in format:
 
-    { "user_id/__KEYVAL__/1/__KEYKEY__/title/__KEYVAL__/My Hero Academia 41 + 42, roba varia" : {
-                                                                                                    "id": 6, 
-                                                                                                    "user_id": 1, 
-                                                                                                    "title": "My Hero Academia 41 + 42, roba varia", 
-                                                                                                    "price": null, 
-                                                                                                    "release_date": "2025-05-06T00:00:00+00:00", 
-                                                                                                    "description": "Nella foto c'\u00e8 un botto di roba", 
-                                                                                                    "copies_to_buy": null, 
-                                                                                                    "useful_links": []
-                                                                                                },
+    { "any string"  :   {
+                            "id": 6, 
+                            "user_id": 1, 
+                            "title": "My Hero Academia 41 + 42, roba varia", 
+                            "price": null, 
+                            "release_date": "2025-05-06T00:00:00+00:00", 
+                            "description": "Nella foto c'\u00e8 un botto di roba", 
+                            "copies_to_buy": null, 
+                            "useful_links": []
+                        } ,
+        ...
+    }
     '''
 
     if from_json:
@@ -152,16 +159,66 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
     with connection.cursor() as cursor:
         cursor.execute("SELECT seq FROM sqlite_sequence WHERE name = %s", [table_name])
         result = cursor.fetchone()
-        print(result)
         next_id = result[0] + 1  # The next value is the current value + 1. Note that even if it's zero, the result "0" is returned so no need to check for a result to exist.
+    
+    input_dict.pop('Model_Name') # Useless from here onwards
 
     return table_name, model, next_id, input_dict
     
 
 
 def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict):
+    '''
+    First call interpret_dict_of_a_model_in_db() and then this
+    '''
     # Type check
     if not isinstance(table_name, str) or not issubclass(model, models.Model) or not isinstance(next_id, int) or not isinstance(input_dict, dict):
         raise Exception("Something went wrong.")
     
-    
+    stats = ''
+    added = 0
+    skipped = 0
+
+    # NOTE: No need to check for the pre-existance of the primary key, as SQLite will fail due to the containt fail.
+    # Considering that, I can simply execute INSERT queries without checking the existence first.
+    # I just need to adjust the autoincrement id properly.
+    # Also, the sqlite_sequence table is updated automatically.
+
+    input_dict.pop('Model_Name', None) # Just in case it's still here, as it's useless now
+
+    for k in input_dict:
+        entry = input_dict[k] # Database entry as a dict column_name : value
+
+        entry['id'] = next_id
+        column_names_in_order = ""
+        column_values_in_order = []
+
+        for column_name in entry:
+            value = entry[column_name]
+
+            if isinstance(value, list):
+                value = "[]"
+            
+            column_names_in_order += f"{column_name},"
+            column_values_in_order.append(value)
+
+        column_names_in_order = column_names_in_order[:-1] # Remove last ","
+
+        query = f"INSERT INTO {table_name} ({column_names_in_order}) VALUES ({f"{'%s,'*len(column_values_in_order)}"[:-1]})"
+
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(query, column_values_in_order)
+                s = f'Added {entry['title']} to DB.' 
+                stats += s+'<br>'
+                added += 1
+                next_id += 1
+            except IntegrityError as e:
+                s = f"Item {entry['title']} -> {e}"
+                stats += s+'<br>'
+                skipped += 1
+
+            
+            #print(s)
+
+    return stats, "Added - "+str(added), "Skipped - "+str(skipped)
