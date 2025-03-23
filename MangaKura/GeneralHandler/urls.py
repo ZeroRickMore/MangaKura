@@ -5,7 +5,7 @@ from . import extra_functions
 
 urlpatterns = [
 
-    path('search/<str:category>/', views.search_view, name='search'),
+    path('search/', views.search_view, name='search'),
 
     # ============================== MANGA STUFF ==============================
 

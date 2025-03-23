@@ -875,8 +875,9 @@ def delete_wishlist_item(request, wishlist_item_id):
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
-def search_view(request, category):
+def search_view(request):
     query = request.GET.get('q', '')
+    category = query = request.GET.get('category', '')
 
     if category == "Manga":
         results = UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title')
