@@ -40,6 +40,6 @@ urlpatterns = [
     path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs),
     path('api/cleanup_unused_images', extra_functions.cleanup_unused_images),
     path('api/change_LAZY_setting', extra_functions.change_LAZY_setting),
-    path('api/create_user_extra_infos_empty_entry_if_not_exists', extra_functions.create_user_extra_infos_empty_entry_if_not_exists),
+    # path('api/create_user_extra_infos_empty_entry_if_not_exists', extra_functions.create_user_extra_infos_empty_entry_if_not_exists),
     path('api/execute_sql_raw_query_on_db', extra_functions.execute_sql_raw_query_on_db),
 ]

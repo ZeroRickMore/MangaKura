@@ -209,8 +209,14 @@ def remove_file(path) -> str:
     finally:
         return s
     
-@api
+#@api
 def create_user_extra_infos_empty_entry_if_not_exists(request):
+    '''
+    This function does NOT work well.
+    That's why it just returns.
+    '''
+    return HttpResponse("Not in use.")
+
     try:
         entry = UserToExtraInfos.objects.get(user=request.user) # This goes in error if entry does not exist...
         print(entry)
