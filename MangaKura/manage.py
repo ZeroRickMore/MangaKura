@@ -2,7 +2,6 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from MangaKura import settings as GLOBAL_SETTINGS
 
 def main():
     """Run administrative tasks."""
@@ -17,21 +16,24 @@ def main():
         ) from exc
     
     # START OF EXTRA ARGS HANDLING ======================================================
-    print("\n")
 
     if 'lazy' in sys.argv:
+        print("\n")
         # Consume the argument and then run the program normally
         sys.argv.remove('lazy')
-        GLOBAL_SETTINGS.LAZY = True
+        os.environ['LAZY'] = "1"
         print("\t]RUNNING AS LAZY")
+        print("\n")
 
     if 'offline' in sys.argv:
+        print("\n")
         # Consume the argument and then run the program normally
         sys.argv.remove('offline')
-        GLOBAL_SETTINGS.OFFLINE = True
+        os.environ['OFFLINE'] = "1"
         print("\t]RUNNING AS OFFLINE")
+        print("\n")
 
-    print("\n")
+     
     # END OF EXTRA ARGS HANDLING ======================================================
 
     execute_from_command_line(sys.argv)
