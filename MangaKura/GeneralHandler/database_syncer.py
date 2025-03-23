@@ -2,6 +2,9 @@
 from django.db import models
 import json
 from django.apps import apps
+from MangaKura import settings as GLOBAL_SETTINGS
+import requests
+from django.db import connection
 
 
 KEYVALUE_SEPARATOR = '/__KEYVAL__/'
@@ -110,10 +113,13 @@ def get_model_from_table(table_name, app_label):
 
 
 
-def read_dict_of_a_model_in_db(input_dict : dict, 
+def interpret_dict_of_a_model_in_db(input_dict : dict, 
                                from_json : bool = True,
-                               app_label='GeneralHandler'):
+                               app_label='GeneralHandler') -> tuple[str, models.Model, int, dict]:
     '''
+    First call get_dict_of_a_model_in_db() and then give the output here.
+
+
     The dict must be in format:
 
     { "user_id/__KEYVAL__/1/__KEYKEY__/title/__KEYVAL__/My Hero Academia 41 + 42, roba varia" : {
@@ -136,16 +142,26 @@ def read_dict_of_a_model_in_db(input_dict : dict,
         raise Exception('Please give a dict.')
 
     # Get model from the dict
-    model : models.Model = get_model_from_table(table_name=input_dict['Model_Name'], app_label=app_label)
+    table_name=input_dict['Model_Name']
+    model : models.Model = get_model_from_table(table_name, app_label=app_label)
 
     if not model or not issubclass(model, models.Model):
         raise Exception(f"Model {input_dict['Model_Name']} not found")
 
+    # Find next autoincrement id. No need to check for table_name's correctness as it's already checked if no models.Model is found
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT seq FROM sqlite_sequence WHERE name = %s", [table_name])
+        result = cursor.fetchone()
+        print(result)
+        next_id = result[0] + 1  # The next value is the current value + 1. Note that even if it's zero, the result "0" is returned so no need to check for a result to exist.
 
-    # Find next autoincrement id
-    next_id = model.objects.last().id + 1
+    return table_name, model, next_id, input_dict
+    
 
 
-
-    return next_id
+def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict):
+    # Type check
+    if not isinstance(table_name, str) or not issubclass(model, models.Model) or not isinstance(next_id, int) or not isinstance(input_dict, dict):
+        raise Exception("Something went wrong.")
+    
     
