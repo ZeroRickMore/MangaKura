@@ -101,7 +101,7 @@ class WishlistImage(models.Model):
 
 
 class UserToExtraInfos(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, unique=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     MANGA_STATS_TO_BE_MODIFIED = models.BooleanField(default=True)
     manga_stats = models.JSONField(null=True, blank=True)
 
