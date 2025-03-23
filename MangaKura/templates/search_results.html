@@ -20,6 +20,19 @@
                         {% endfor %}
                     </div>
                 </li>
+                {% elif item.title %}
+                <li>
+                    <a href="{% url 'view_wishlist_item' item.id %}">{{ item.title }}</a> (Wishlist)
+                    
+                    <!-- Display Images -->
+                    <div class="variant-images">
+                        {% for image in item.images.all %}
+                            <img src="{{ image.image.url }}" alt="Image for {{ item.title }}" class="variant-image" loading="lazy">
+                        {% empty %}
+                            <p>No images available for this item.</p>
+                        {% endfor %}
+                    </div>
+                </li>          
                 {% endif %}
             {% endfor %}
         </ul>
