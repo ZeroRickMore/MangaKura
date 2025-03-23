@@ -1,9 +1,11 @@
 # DO NOT IMPORT ALL MODELS OR issubclass() WILL FAIL DUE TO IMPORT STUFF
 from django.db import models
-from django.http import HttpResponse
-from pprint import pprint
+import json
+from django.apps import apps
 
-SEPARATOR = '__/__'
+
+KEYVALUE_SEPARATOR = '/__KEYVAL__/'
+KEYKEY_SEPARATOR = '/__KEYKEY__/'
 
 def get_column_names_of_a_model(model=None) -> list[str]:
 
@@ -15,10 +17,11 @@ def get_column_names_of_a_model(model=None) -> list[str]:
 
 
 def get_dict_of_a_model_in_db(model : models.Model = None, 
-                              primary_key : list[str] = None
+                              primary_key : list[str] = None,
+                              as_json = False,
     ) -> tuple[str , dict[tuple[list[str] , list[str]]]]:
     '''
-    Given a model, returns the name of the model, 
+    Given a model, returns the name of the DB table of the given model, 
     and a dict built like this:
 
     {
@@ -60,6 +63,7 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
 
     # Create the dict
     all_items_dict = {}
+    all_items_dict['Model_Name'] = model._meta.db_table
 
     # Gather all the objects in db
     all_objects = model.objects.all()
@@ -70,23 +74,78 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
     # Gather the keys
     for entry in all_column_values: # Iterate over the db entries ordered by value
         entry : dict
-        key = []
+
+        if as_json:
+            # If a datetime is used, must be converted for json
+            try: 
+                entry['release_date'] = entry['release_date'].isoformat()
+            except:
+                pass
+        
+        key = ''
 
         for k_name in primary_key:
             value = entry[k_name]
-            key.append(k_name+SEPARATOR+str(value))
+            key += k_name+KEYVALUE_SEPARATOR+str(value)+KEYKEY_SEPARATOR
 
-        key = tuple(key) # To become a key must be immutable
+        key = key[:-len(KEYKEY_SEPARATOR)] # Remove the last separator
 
         all_items_dict[key] = entry
 
-    return model.__name__ , all_items_dict
+    if not as_json:
+        return all_items_dict
+
+    json_data = json.dumps(all_items_dict)
+    return json_data
 
 
-def read_dict_of_a_model_in_db(input_dict : dict):
+def get_model_from_table(table_name, app_label):
+    try:
+        # Iterate through all models in the app
+        for model in apps.get_app_config(app_label).get_models():
+            if model._meta.db_table == table_name:
+                return model
+    except LookupError:
+        return None  # Model not found
+
+
+
+def read_dict_of_a_model_in_db(input_dict : dict, 
+                               from_json : bool = True,
+                               app_label='GeneralHandler'):
+    '''
+    The dict must be in format:
+
+    { "user_id/__KEYVAL__/1/__KEYKEY__/title/__KEYVAL__/My Hero Academia 41 + 42, roba varia" : {
+                                                                                                    "id": 6, 
+                                                                                                    "user_id": 1, 
+                                                                                                    "title": "My Hero Academia 41 + 42, roba varia", 
+                                                                                                    "price": null, 
+                                                                                                    "release_date": "2025-05-06T00:00:00+00:00", 
+                                                                                                    "description": "Nella foto c'\u00e8 un botto di roba", 
+                                                                                                    "copies_to_buy": null, 
+                                                                                                    "useful_links": []
+                                                                                                },
+    '''
+
+    if from_json:
+        input_dict = json.loads(input_dict)
 
     # Type check
     if not isinstance(input_dict, dict):
-        raise Exception("Please give a dict.")
-    
+        raise Exception('Please give a dict.')
+
+    # Get model from the dict
+    model : models.Model = get_model_from_table(table_name=input_dict['Model_Name'], app_label=app_label)
+
+    if not model or not issubclass(model, models.Model):
+        raise Exception(f"Model {input_dict['Model_Name']} not found")
+
+
+    # Find next autoincrement id
+    next_id = model.objects.last().id + 1
+
+
+
+    return next_id
     
