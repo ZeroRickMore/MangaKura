@@ -85,12 +85,10 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
     for entry in all_column_values: # Iterate over the db entries ordered by value
         entry : dict
 
-        if as_json:
-            # If a datetime is used, must be converted for json
-            try: 
-                entry['release_date'] = entry['release_date'].isoformat()
-            except:
-                pass
+        try: 
+            entry['release_date'] = entry['release_date'].isoformat()
+        except:
+            pass
         
         key = f"OBJ{i}"
         i += 1
@@ -167,11 +165,11 @@ def interpret_dict_of_a_model_in_db(input_dict : dict,
         cursor.execute("SELECT seq FROM sqlite_sequence WHERE name = %s", [table_name])
         result = cursor.fetchone()
         next_id = result[0] + 1  # The next value is the current value + 1. Note that even if it's zero, the result "0" is returned so no need to check for a result to exist.
-    
+
     input_dict.pop('Model_Name') # Useless from here onwards
 
     return table_name, model, next_id, input_dict
-    
+
 
 
 def update_own_db_table(table_name : str, model : models.Model, next_id : int, input_dict : dict, using_database : str = None):
@@ -188,7 +186,7 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
     
     stats = ''
     added = 0
-    skipped = 0
+    updated = 0
 
     # NOTE: No need to check for the pre-existance of the primary key, as SQLite will fail due to the containt fail.
     # Considering that, I can simply execute INSERT queries without checking the existence first.
@@ -216,6 +214,8 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
         column_names_in_order = column_names_in_order[:-1] # Remove last ","
 
         query = f"INSERT INTO {table_name} ({column_names_in_order}) VALUES ({f"{'%s,'*len(column_values_in_order)}"[:-1]})"
+        
+        print(column_values_in_order)
 
         with connections[using_database].cursor() as cursor:
             try:
@@ -226,13 +226,35 @@ def update_own_db_table(table_name : str, model : models.Model, next_id : int, i
                 next_id += 1
             except IntegrityError as e:
                 s = f"Item {entry['title']} -> {e}"
+
+                # This is the error type
+                # UNIQUE constraint failed: GeneralHandler_usertowishlistitem.user_id, GeneralHandler_usertowishlistitem.title
+                e = str(e)
+                e = e.replace("UNIQUE constraint failed: ", "")
+                e = e.replace(str(model._meta.db_table)+".", "")
+                e = e.replace(" ", "")
+                e = e.split(",")
+
+                #print(column_names_in_order)
+                query_update = f"UPDATE {table_name} SET {str([ str(column)+'=%s' for column in column_names_in_order.replace(" ", "").split(",") if column != 'id' ])[1:-1].replace("'", "")} where id=(select id from {table_name} where {str([str(pkey_name)+'=%s' for pkey_name in e])[1:-1].replace("'", "").replace(",", " and")})"
+
+                # Prepare for %s query
+                column_values_in_order.pop(0) # Remove id
+                for k in e: # Append primary key column names
+                   column_values_in_order.append(entry[k]) 
+
+                #print(query_update.count("%s"), "  -  ", len(column_values_in_order))
+                cursor.execute(query_update, column_values_in_order)
+
+                #s += '<br>'+query_update+'<br>'+str(column_values_in_order)+'<br><br>'
                 stats += s+'<br>'
-                skipped += 1
+                
+                updated += 1
 
             
             #print(s)
 
-    return '<br>'.join([stats, "Added - "+str(added), "Skipped - "+str(skipped)])
+    return '<br>'.join([stats, "Added - "+str(added), "updated - "+str(updated)])
 
 
 
@@ -279,4 +301,61 @@ def testing(request):
         return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()), content_type="application/json")
     
     return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()))
+'''
+
+
+
+
+'''
+TESTS
+
+1) Metti nel db local
+local
+insert into GeneralHandler_usertowishlistitem (id, user_id, title, description, useful_links) values (1, 1, 'test', 'testDesc', '[]')
+
+
+2) Guarda che sta li e non pure in default
+local
+select * from GeneralHandler_usertowishlistitem where id=1
+(fa vedere la entry con id 1)
+
+default
+select * from GeneralHandler_usertowishlistitem where id=1
+(vuoto)
+
+3) Updata con API
+Output -> Added test to DB.
+
+4) Controlla di nuovo
+default
+select * from GeneralHandler_usertowishlistitem where title='test'
+(fa vedere la entry con id 34 perché è il next!)
+
+5) Testa con update
+local
+update GeneralHandler_usertowishlistitem set title='testMODIFIED' where title='test'
+
+6) Updata con API 
+Output -> Added testMODIFIED to DB.
+(ha funzionato modificando una entry ma lasciandogli lo stesso id!)
+
+6.5) Controlla le entry sul default
+====[ select * from GeneralHandler_usertowishlistitem where title like('test%') ]==== 
+(34, 'test', None, None, 'testDesc', None, '[]', 1)
+(35, 'testMODIFIED', None, None, 'testDesc', None, '[]', 1)
+
+7) Modifica un parametro non chiave (descrizione)
+local
+update GeneralHandler_usertowishlistitem set description='descMODIFIED' where title='testMODIFIED'
+
+7.5) Controlla la modifica sul locale
+====[ select * from GeneralHandler_usertowishlistitem where title='testMODIFIED' ]==== 
+(1, 'testMODIFIED', None, None, 'descMODIFIED', None, '[]', 1)
+
+8) Attiva API
+(Added - 0) Perfetto! Non ha aggiunto niente perché nnon ho modificato una key
+
+9) Controlla la modifica sul default
+====[ select * from GeneralHandler_usertowishlistitem where title='testMODIFIED' ]==== 
+(35, 'testMODIFIED', None, None, 'descMODIFIED', None, '[]', 1)
 '''
