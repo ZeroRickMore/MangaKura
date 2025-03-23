@@ -4,10 +4,12 @@ from django.http import HttpResponse
 from django.utils.html import format_html
 import os
 from pathlib import Path
-
+from django.views.decorators.csrf import csrf_exempt
 from MangaKura import settings as GLOBAL_SETTINGS
-
 from django.db import connection
+import requests
+
+
 
 # This is the place where all extra functions are.
 # Generally, to access them, a REST API is used.
@@ -26,11 +28,38 @@ def api(func):
     api_functions.append(func.__name__)
     return func  # Returns the function unchanged
 
-def check_is_superuser(user):
+def check_is_superuser(user) -> bool:
     '''
     Takes a request.user as parameter and checks is_superuser
     '''
-    return user.is_superuser
+    return bool(user.is_superuser)
+
+def is_main_alive(url=GLOBAL_SETTINGS.MAIN_WEBSITE_URL, timeout=1.5) -> bool:
+    try:
+        requests.head(url=url, verify=False, timeout=timeout) # Head method for less overhead
+        return True
+    except requests.exceptions.ConnectTimeout:
+        return False
+    
+
+def remove_file(path) -> str:
+    s = 'This is a default message...'
+    try:
+        os.remove(path)
+        s = f"File {path} deleted successfully"
+        print(s)
+    except FileNotFoundError:
+        s = f"File {path} not found"
+        print(s)
+    except PermissionError:
+        s = f"Permission to {path} denied"
+        print(s)
+    except Exception as e:
+        s = f"Error: {e}"
+        print(s)
+    finally:
+        return s
+
 
 def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API List', api_name='Available APIs'):
     # Full HTML response with a black background and content in gray background with green text
@@ -59,19 +88,27 @@ def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API Lis
 
     return html_content
 
-YOU_ARE_NOT_SUPERUSER_MAD_RESPONSE = build_html_with_content_in_pre_and_cool_api_css(content="YOU ARE NOT A SUPERUSER! GET OUT!",
-                                                                            title='GET OUT!',
-                                                                            api_name='GET OUT!')
-
-
 def apis(request):
-    funcs = 'PLEASE NOTE THAT YOU CAN USE SOME APIs IF AND ONLY IF YOU ARE A SUPERUSER!<br><br>'
+    funcs = 'This an API-like interface, and not a real API.<br><br>PLEASE NOTE THAT YOU CAN USE SOME APIs IF AND ONLY IF YOU ARE A SUPERUSER!<br><br>'
     for func in api_functions:
         funcs += '🔹 <a href="/api/' + func + '">' + func + '</a>\n\n'
     
     html_content = build_html_with_content_in_pre_and_cool_api_css(content=funcs)
 
     return HttpResponse(html_content)
+
+
+
+YOU_ARE_NOT_SUPERUSER_MAD_RESPONSE = build_html_with_content_in_pre_and_cool_api_css(content="YOU ARE NOT A SUPERUSER! GET OUT!",
+                                                                            title='GET OUT!',
+                                                                            api_name='GET OUT!')
+
+
+# ================================================================================================================================
+# =============================                          API Methods                      ========================================
+# ================================================================================================================================
+
+
 
 @api
 def recalculate_own_manga_costs(request):
@@ -134,6 +171,10 @@ def recalculate_own_manga_costs(request):
     return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=content, title='Manga costs', api_name='Recalculate own Manga Costs'))
 
 
+
+
+
+
 @api
 def cleanup_unused_images(request):
     # Considering this is a function that helps the DB delete unused images,
@@ -180,6 +221,12 @@ def cleanup_unused_images(request):
         )
     )
 
+
+
+
+
+
+
 @api
 def change_LAZY_setting(request):
     if not check_is_superuser(request.user):
@@ -191,49 +238,14 @@ def change_LAZY_setting(request):
                                                                         title="LAZY Swap",
                                                                         api_name='LAZY Setting Swap'))
 
-def remove_file(path) -> str:
-    s = 'This is a default message...'
-    try:
-        os.remove(path)
-        s = f"File {path} deleted successfully"
-        print(s)
-    except FileNotFoundError:
-        s = f"File {path} not found"
-        print(s)
-    except PermissionError:
-        s = f"Permission to {path} denied"
-        print(s)
-    except Exception as e:
-        s = f"Error: {e}"
-        print(s)
-    finally:
-        return s
+
     
-#@api
-def create_user_extra_infos_empty_entry_if_not_exists(request):
-    '''
-    This function does NOT work well.
-    That's why it just returns.
-    '''
-    return HttpResponse("Not in use.")
 
-    try:
-        entry = UserToExtraInfos.objects.get(user=request.user) # This goes in error if entry does not exist...
-        print(entry)
-        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=f"The entry for the user already exists!<br><br>It is :<br><br>{entry}<br><br>Doing nothing.",
-                                                                            title="Generate ExtraInfos Entry",
-                                                                            api_name="Create UserToExtraInfos empty entry if it does not exist"))
-    except:
-        entry = UserToExtraInfos.objects.create(user=request.user) # Create entry for the user
-
-        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=f"The entry for the user was created!<br><br>It is :<br><br>{entry}",
-                                                                        title="Generate ExtraInfos Entry",
-                                                                        api_name="Create UserToExtraInfos empty entry if it does not exist"))
     
 
 
 
-from django.views.decorators.csrf import csrf_exempt
+
 @api
 @csrf_exempt # It is safe, considering the superuser check.
 def execute_sql_raw_query_on_db(request):
@@ -251,6 +263,7 @@ def execute_sql_raw_query_on_db(request):
                             title="Execute raw SQL Query",
                             api_name="Execute raw query")
                             )
+    
     elif request.method == 'POST':
         data = request.POST.get("query")  # Get SQL query from form
         with connection.cursor() as cursor:
@@ -276,3 +289,39 @@ def execute_sql_raw_query_on_db(request):
     update auth_user set is_superuser = 1 where username='ZeroKuraManga'
     '''
 
+
+
+
+
+
+
+
+
+
+
+
+
+# ================================================================================================================================
+# =============================                           DEPRECATED                       =======================================
+# ================================================================================================================================
+
+#@api
+def create_user_extra_infos_empty_entry_if_not_exists(request):
+    '''
+    This function does NOT work well.
+    That's why it just returns.
+    '''
+    return HttpResponse("Not in use.")
+
+    try:
+        entry = UserToExtraInfos.objects.get(user=request.user) # This goes in error if entry does not exist...
+        print(entry)
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=f"The entry for the user already exists!<br><br>It is :<br><br>{entry}<br><br>Doing nothing.",
+                                                                            title="Generate ExtraInfos Entry",
+                                                                            api_name="Create UserToExtraInfos empty entry if it does not exist"))
+    except:
+        entry = UserToExtraInfos.objects.create(user=request.user) # Create entry for the user
+
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=f"The entry for the user was created!<br><br>It is :<br><br>{entry}",
+                                                                        title="Generate ExtraInfos Entry",
+                                                                        api_name="Create UserToExtraInfos empty entry if it does not exist"))
