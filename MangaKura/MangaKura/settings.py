@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 LAZY = False # True if avoid computational-heavy requests like calculating manga stats. Can be changed by running with 'lazy' in args
 OFFLINE = False # True if offline. Can be changed by running with 'offline' in args
 
+load_dotenv()
 MAIN_WEBSITE_URL = os.getenv('MAIN_WEBSITE_URL') # Used to check if the main site is alive or not
 
 
