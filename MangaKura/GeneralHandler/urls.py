@@ -11,10 +11,10 @@ urlpatterns = [
 
     path('insertManga/', views.insert_manga, name='insert_manga'),
     path('view_manga/<int:manga_id>/', views.view_manga, name='view_manga'),
-    path('view_manga_list/', views.view_manga_list, name='view_manga_list'),
+    path('mangas/', views.view_manga_list, name='view_manga_list'),
     path('manga/<int:manga_id>/edit/', views.edit_manga, name='edit_manga'),
     path('manga/<int:manga_id>/delete/', views.delete_manga, name='delete_manga'),
-    path('view_manga_list/<str:view_criteria>', views.view_mangas_with_criteria, name='view_mangas_with_criteria'),
+    path('mangas/<str:view_criteria>', views.view_mangas_with_criteria, name='view_mangas_with_criteria'),
 
     # ============================== VARIANT STUFF ==============================
 
