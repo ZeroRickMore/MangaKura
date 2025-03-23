@@ -35,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wqi)mrtc9h*q3tsh1#v+p0b+yy*6q1$)&az1%ds!r-dx=^1sy+'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 
 LOGOUT_REDIRECT_URL = 'login'  # Redirect after logout
