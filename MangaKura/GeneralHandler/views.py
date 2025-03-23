@@ -641,7 +641,7 @@ def view_mangas_location_sorted(request):
     
     sorted_groups, error_msg = get_mangas_sorted_groups_and_error_msg_for_location(mangas_list=mangas)
 
-    stats = build_mangas_stats(user_manga_list=mangas)
+    stats = build_mangas_stats(user=request.user, user_manga_list=mangas)
     
     return render(request, "user_manga_list_location_sorted.html", {
         "sorted_groups": sorted_groups, 
