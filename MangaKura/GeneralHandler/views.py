@@ -155,7 +155,7 @@ def insert_wishlist_item(request):
                 for image in images:
                     WishlistImage.objects.create(wishlist_item=wishlist_item, image=image)  # Save each image
                        
-            return redirect('wishlist_item_detail', wishlist_item_id=wishlist_item.id)
+            return redirect('view_wishlist_item', wishlist_item_id=wishlist_item.id)
     else:
         form = WishlistItemForm()
 
@@ -219,12 +219,12 @@ def view_manga(request, manga_id):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def wishlist_item_detail(request, wishlist_item_id):
+def view_wishlist_item(request, wishlist_item_id):
     wishlist_item = get_object_or_404(UserToWishlistItem, id=wishlist_item_id, user=request.user)
     wishlist_item.description = format_html('<br><br>' + wishlist_item.description.replace('\n', '<br>'))
 
     images = WishlistImage.objects.filter(wishlist_item=wishlist_item)
-    return render(request, 'wishlist_item_detail.html', {
+    return render(request, 'view_wishlist_item.html', {
         'wishlist_item': wishlist_item,
         'images': images,
         'useful_links': wishlist_item.useful_links
@@ -832,7 +832,7 @@ def edit_wishlist_item(request, wishlist_item_id):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            return redirect('wishlist_item_detail', wishlist_item_id=wishlist_item.id)
+            return redirect('view_wishlist_item', wishlist_item_id=wishlist_item.id)
     else:
         form = WishlistItemForm(instance=wishlist_item)
         formset = WishlistImageFormSet(instance=wishlist_item)
@@ -877,13 +877,16 @@ def delete_wishlist_item(request, wishlist_item_id):
 
 def search_view(request):
     query = request.GET.get('q', '')
-    category = query = request.GET.get('category', '')
+    try:
+        category = request.GET.get('category', '').lower()
+    except:
+        category = None
 
-    if category == "Manga":
+    if category == "manga":
         results = UserToManga.objects.filter(manga_title__icontains=query, user=request.user).order_by('manga_title')
-    elif category == "Variant":
+    elif category == "variant":
         results = UserToVariant.objects.filter(variant_title__icontains=query, user=request.user).order_by('variant_title')
-    elif category == "Wishlist":
+    elif category == "wishlist":
         results = UserToWishlistItem.objects.filter(title__icontains=query, user=request.user).order_by('release_date').order_by('title')
     else:  # Default: Any
         # Variant, then Manga, then Wishlist
