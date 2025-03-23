@@ -5,6 +5,7 @@ body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
+    max-width:100vw;
 }
 
 /* Style for the welcome message in the nav bar */
@@ -15,6 +16,7 @@ nav {
     background-color: #121212; /* Dark background */
     padding: 10px 20px;
     position: relative; /* To allow absolute positioning of the welcome text */
+    max-width: 100%;
 }
 
 /* Position the welcome message in the center of the nav */
@@ -31,12 +33,15 @@ nav {
 nav .left-buttons {
     display: flex;
     gap: 10px;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Right side buttons */
 nav .right-buttons {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 /* Style for buttons (nav links) */
@@ -58,7 +63,8 @@ button.logout-button {
 nav a:hover,
 button[type="submit"]:hover,
 button.logout-button:hover {
-    background-color: #00a0c6; /* Darker cyan on hover */
+    background-color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
     transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
@@ -83,6 +89,32 @@ button[type="submit"] + button[type="submit"],
     nav {
         flex-direction: column;
         align-items: center;
+        font-size:10px;
+    }
+    
+    .right-buttons {
+        margin-top:10px;
+        padding: 0px;
+        max-width:100vw;
+        justify-content: center;
+    }
+    
+    .right-buttons a {
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        max-width:7px;
+    }
+    
+    .search-container {
+        transform: scale(0.85);
+        position:relative;
+        left:13px;
+    }
+    
+    .left-buttons a {
+        position:relative;
+        left:13px;
     }
 }
 
@@ -103,7 +135,7 @@ form {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    max-width: 500px;
+    max-width: min(500px, 90vw);
     margin: 0 auto;
 }
 
@@ -114,7 +146,7 @@ form input, form select, form textarea {
     width: 500px;
     background-color: #3a3a3a; /* Much lighter input background */
     color: #fff; /* White text */
-    max-width: 500px;
+    max-width: min(500px, 90vw);
 }
 
 form button[type="submit"] {
@@ -126,10 +158,11 @@ form button[type="submit"] {
     cursor: pointer;
     width: 100%;
     transition: background-color 0.3s ease;
+    max-width: min(500px, 90vw);
 }
 
 form button[type="submit"]:hover {
-    background-color: #00a0c6;
+    background-color: #E12885;
 }
 
 /* Image preview (if applicable) */
@@ -168,7 +201,8 @@ ul li a {
 }
 
 ul li a:hover {
-    color: #00a0c6;
+    color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
 }
 
 /* Empty state styling for lists (when no items) */
@@ -301,6 +335,7 @@ p {
     color: #e0e0e0;
     border: 1px solid #777;
     width: 500px;
+    max-width: min(500px, 90vw);
 }
 
 /* Smaller select dropdown */
@@ -425,6 +460,7 @@ li strong {
     color: #e0e0e0;
     border: 1px solid #777;
     width: 500px;
+    max-width: min(500px, 90vw);
 }
 
 /* Smaller select dropdown */
@@ -463,4 +499,16 @@ li strong {
 .search-container button:hover {
     background-color: #00a0c6;
     transform: scale(1.05);
+}
+
+#stats {
+    text-decoration: none; /* Remove underline */
+    color: #3498db; /* Default text color */
+    font-size: 16px;
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* Smooth effect */
+}
+
+#stats:hover {
+    color: #E12885; /* Change text color on hover */
+    text-shadow: 0 0 8px rgba(225, 40, 133, 0.8), 0 0 12px rgba(225, 40, 133, 0.6); /* Glowing pink effect */
 }
