@@ -1,4 +1,3 @@
-
 from .models import *
 from django.http import HttpResponse
 from django.utils.html import format_html
@@ -7,8 +6,9 @@ from pathlib import Path
 from django.views.decorators.csrf import csrf_exempt
 from MangaKura import settings as GLOBAL_SETTINGS
 from django.db import connection
+from django.db.utils import IntegrityError
 import requests
-
+from . import database_syncer
 
 
 # This is the place where all extra functions are.
@@ -40,7 +40,6 @@ def is_main_alive(url=GLOBAL_SETTINGS.MAIN_WEBSITE_URL, timeout=1.5) -> bool:
         return True
     except requests.exceptions.ConnectTimeout:
         return False
-    
 
 def remove_file(path) -> str:
     s = 'This is a default message...'
@@ -59,7 +58,6 @@ def remove_file(path) -> str:
         print(s)
     finally:
         return s
-
 
 def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API List', api_name='Available APIs'):
     # Full HTML response with a black background and content in gray background with green text
@@ -265,9 +263,15 @@ def execute_sql_raw_query_on_db(request):
                             )
     
     elif request.method == 'POST':
-        data = request.POST.get("query")  # Get SQL query from form
+        data = request.POST.get("query")  # Get SQL query from
         with connection.cursor() as cursor:
-            cursor.execute(data)
+            try:
+                cursor.execute(data)
+            except IntegrityError as e:
+                return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(content=f'{e}',
+                                                                                    title='Integrity Error',
+                                                                                    api_name='Intergrity Error'), status=422) # 422 for Unprocessable Entity, because the query was bad and not processable
+
             results = cursor.fetchall()
 
             entries = ''
@@ -288,8 +292,6 @@ def execute_sql_raw_query_on_db(request):
 
     update auth_user set is_superuser = 1 where username='ZeroKuraManga'
     '''
-
-
 
 
 
