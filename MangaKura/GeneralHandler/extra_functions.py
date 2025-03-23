@@ -9,6 +9,8 @@ from django.db import connections
 from django.db.utils import IntegrityError
 import requests
 from . import database_syncer
+from django.apps import apps
+
 
 TURN_OFF_SUPERUSER_CHECK = False
 
@@ -39,6 +41,11 @@ def check_is_superuser(user) -> bool:
     return bool(user.is_superuser)
 
 def is_main_alive(url=GLOBAL_SETTINGS.MAIN_WEBSITE_URL, timeout=1.5) -> bool:
+
+    print(GLOBAL_SETTINGS.OFFLINE)
+    if GLOBAL_SETTINGS.OFFLINE:
+        return False
+
     try:
         requests.head(url=url, verify=False, timeout=timeout) # Head method for less overhead
         return True
@@ -310,6 +317,13 @@ def testing(request):
                                                                         api_name="Nothing to test here..."))
 
 
+def get_all_models_list():
+    app_name = "GeneralHandler"
+    models_list = apps.get_app_config(app_name).get_models()
+
+    return list(models_list)
+
+
 @api
 def update_main_database(request):
 
@@ -327,14 +341,24 @@ def update_main_database(request):
 
     as_json = False
 
-    # Load the table data from the local db
-    json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, as_json=as_json, using_database='local')
-    
-    # Interpret the table data and get next_id from the default table
-    args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database='default')
-    
-    # And sync by adding in my own default db
-    content = database_syncer.update_own_db_table(*args, using_database='default')
+    # models_list =  get_all_models_list()
+    # Manual control is way better, don't stress me too much over this.
+    content = ''
+    models_list = [UserToManga, UserToVariant, UserToWishlistItem, VariantImage, WishlistImage] # UserToExtraInfos will be manually handled as it's strictly related to the Users, and that table is not merged.
+
+    for model in models_list:
+        content += f'INFORMATION FOR CLASS - {model.__name__} ================================ <br><br>'
+
+        # Load the table data from the local db
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=model, as_json=as_json, using_database='local')
+        
+        # Interpret the table data and get next_id from the default table
+        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json, using_database='default')
+        
+        # And sync by adding in my own default db
+        content += database_syncer.update_own_db_table(*args, using_database='default')
+        
+        content += '<br><br>'
 
     # Return for user feedback
     if as_json:
@@ -345,7 +369,7 @@ def update_main_database(request):
 
 
 
-    
+
 
 
 
