@@ -10,6 +10,7 @@ from django.db.utils import IntegrityError
 import requests
 from . import database_syncer
 
+TURN_OFF_SUPERUSER_CHECK = True
 
 # This is the place where all extra functions are.
 # Generally, to access them, a REST API is used.
@@ -32,6 +33,9 @@ def check_is_superuser(user) -> bool:
     '''
     Takes a request.user as parameter and checks is_superuser
     '''
+    if TURN_OFF_SUPERUSER_CHECK:
+        return True
+    
     return bool(user.is_superuser)
 
 def is_main_alive(url=GLOBAL_SETTINGS.MAIN_WEBSITE_URL, timeout=1.5) -> bool:
@@ -69,11 +73,12 @@ def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API Lis
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>'''+title+'''</title>
+            <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
             <style>
                 body {{ background-color: black; color: white; font-family: Arial, sans-serif; padding: 20px; }}
                 pre {{ background-color: #222; color: #0f0; padding: 10px; border-radius: 5px; }}
                 a {{ color: #0f0; }}
-            </style>
+            </style>  
         </head>
         <body>
             <h1>'''+api_name+'''</h1>
@@ -83,7 +88,6 @@ def build_html_with_content_in_pre_and_cool_api_css(content=None, title='API Lis
         ''',
         format_html(content.replace('\n', '<br>'))
     )
-
     return html_content
 
 def apis(request):
@@ -294,6 +298,72 @@ def execute_sql_raw_query_on_db(request):
     '''
 
 
+
+
+@api
+def testing(request):
+    def test_get_dict():
+        return database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
+
+    
+    def test_read_dict():
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
+
+        return database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
+
+    def test_update():
+        json_data = database_syncer.get_dict_of_a_model_in_db(model=UserToWishlistItem, primary_key=['user_id', 'title'], as_json=as_json)
+        args = database_syncer.interpret_dict_of_a_model_in_db(input_dict=json_data, from_json=as_json)
+        return '<br>'.join(list(database_syncer.update_own_db_table(*args)))
+        
+
+    def test_update_single():
+        input_dict =   {'OBJ18': {  'copies_to_buy': None,
+                                    'description': 'Ho qualche volume, vorrei averceli tutti!\r\n'
+                                                    'Sarebbe figo...',
+                                    'id': 26,
+                                    'price': 6.0,
+                                    'release_date': None,
+                                    'title': 'The Walking Dead Color Edition 500 Copie Tedesco (serie '
+                                                'completa)',
+                                    'useful_links': ['https://saldapress.com/ricerca/s/model_AllTypeOfProducts/lingua_It/allpsearch_the%20walking%20dead/ptype_0/autore_388/categoria_20/promo_0/bundles_0/cartagiovani_0/anteprima_0/autografo_0/prezzo_0%7C%7C464/numresult_30/page_0/'],
+                                    'user_id': 1},
+        }
+        
+        return database_syncer.update_own_db_table(table_name='GeneralHandler_usertowishlistitem', model=UserToWishlistItem, next_id=30, input_dict=input_dict)
+        
+
+
+    as_json = True
+
+    if not as_json:
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()), content_type="application/json")
+    
+    return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(test_update()))
+
+@api
+def sync_databases(request):
+
+    # ESSENTIAL CHECK !
+    if not check_is_superuser(request.user):
+        return HttpResponse(YOU_ARE_NOT_SUPERUSER_MAD_RESPONSE)
+    
+    if not is_main_alive():
+        return HttpResponse(build_html_with_content_in_pre_and_cool_api_css(
+            content="The main webserver is offline, you cannot execute this request now.",
+            title="Cannot execute operation",
+            api_name="Cannot execute operation",
+        ))
+
+
+    TABLES_TO_SYNC = [
+        'GeneralHandler_usertoextrainfos',
+        'GeneralHandler_usertomanga',
+        'GeneralHandler_usertovariant',
+        'GeneralHandler_usertowishlistitem',
+        'GeneralHandler_variantimage',
+        'GeneralHandler_wishlistimage',
+    ]
 
 
 
