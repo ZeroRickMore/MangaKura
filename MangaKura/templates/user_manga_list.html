@@ -27,7 +27,7 @@
     
     <ul>
         {% for manga in user_manga %}
-            <li id="centralized-li"><a href="{% url 'manga_detail' manga_id=manga.id %}">{{ manga.manga_title }}</a></li>
+            <li id="centralized-li"><a href="{% url 'view_manga' manga_id=manga.id %}">{{ manga.manga_title }}</a></li>
         {% empty %}
             <li id="centralized-li">No manga found.</li>
         {% endfor %}

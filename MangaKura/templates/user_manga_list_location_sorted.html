@@ -41,7 +41,7 @@
         <ul>
             {% for manga in mangas %}
                 <li id="centralized-li">
-                    <a href="{% url 'manga_detail' manga_id=manga.id %}">{{ manga.manga_title }}</a>
+                    <a href="{% url 'view_manga' manga_id=manga.id %}">{{ manga.manga_title }}</a>
                 </li>
             {% endfor %}
         </ul>

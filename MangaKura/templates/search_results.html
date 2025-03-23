@@ -6,7 +6,7 @@
         <ul>
             {% for item in results %}
                 {% if item.manga_title %}
-                    <li><a href="{% url 'manga_detail' item.id %}">{{ item.manga_title }}</a> (Manga)</li>
+                    <li><a href="{% url 'view_manga' item.id %}">{{ item.manga_title }}</a> (Manga)</li>
                 {% elif item.variant_title %}
                 <li>
                     <a href="{% url 'view_variant' item.id %}">{{ item.variant_title }}</a> (Variant)

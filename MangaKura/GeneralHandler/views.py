@@ -65,7 +65,7 @@ def insert_manga(request):
             set_manga_stats_to_be_modified(user=request.user, set_to=True) # New manga inserted? Stats to be recalculated !
 
             manga.save()
-            return redirect('manga_detail', manga_id=manga.id)
+            return redirect('view_manga', manga_id=manga.id)
     else:
         form = MangaForm()
 
@@ -207,10 +207,10 @@ def view_variant(request, variant_id):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def manga_detail(request, manga_id):
+def view_manga(request, manga_id):
     manga = get_object_or_404(UserToManga, id=manga_id, user=request.user)
     manga.description = format_html('<br><br>' + manga.description.replace('\n', '<br>'))  if manga.description else ''
-    return render(request, 'manga_detail.html', {'manga': manga})
+    return render(request, 'view_manga.html', {'manga': manga})
 
 
 
@@ -761,7 +761,7 @@ def edit_manga(request, manga_id):
         if form.is_valid():
             form.save()
             set_manga_stats_to_be_modified(user=request.user, set_to=True) # Old manga edited? Stats to be recalculated !
-            return redirect('manga_detail', manga_id=manga.id)
+            return redirect('view_manga', manga_id=manga.id)
     else:
         form = MangaForm(instance=manga)
     return render(request, 'edit_manga.html', {'form': form})
