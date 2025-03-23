@@ -322,12 +322,15 @@ def update_db_on_manga_stats(user, manga_stats):
 def build_mangas_stats(user, user_manga_list):
 
     # TODO: Understand if this is still necessary after the DB entry for ExtraInfos.
-    #if GLOBAL_SETTINGS.LAZY:
-    #    return None
+
     
     if not check_if_manga_stats_to_be_calculated(user):
         print("\n\t] CACHE HIT ON MANGA STATS !\n") # DEBUG
         return get_manga_stats_from_db(user=user)
+    
+    if GLOBAL_SETTINGS.LAZY:
+        return 'Too lazy for this... zzZ...'
+
     
     print("\n\t] NO CACHE HIT ON MANGA STATS !\n") # DEBUG
 
@@ -410,10 +413,15 @@ def view_manga_list(request): #
     # ════════════════════════════════════════════════════════════════════════════════
 
     user_manga = UserToManga.objects.filter(user=request.user).order_by('manga_title')
-    stats = build_mangas_stats(user=request.user, user_manga_list=user_manga)
-    #stats = build_mangas_stats(user_manga_list=user_manga)
 
-    return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats})
+    stats = build_mangas_stats(user=request.user, user_manga_list=user_manga)
+
+    no_stats_msg = None
+    if isinstance(stats, str):
+        no_stats_msg = stats
+        stats=None
+    
+    return render(request, 'user_manga_list.html', {'user_manga': user_manga, 'stats' : stats, 'no_stats_msg' : no_stats_msg})
 
 
 @login_required
@@ -643,10 +651,16 @@ def view_mangas_location_sorted(request):
 
     stats = build_mangas_stats(user=request.user, user_manga_list=mangas)
     
+    no_stats_msg = None
+    if isinstance(stats, str):
+        no_stats_msg = stats
+        stats=None
+
     return render(request, "user_manga_list_location_sorted.html", {
         "sorted_groups": sorted_groups, 
         "error_msg": error_msg, 
-        "stats":stats
+        "stats":stats,
+        "no_stats_msg":no_stats_msg,
         }
     )
 

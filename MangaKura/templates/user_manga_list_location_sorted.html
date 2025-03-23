@@ -5,7 +5,10 @@
     
     <h2>Your Manga List {% if selection_type %} - {{ selection_type }} {% endif %}</h2>
 
-    {% if stats %}
+    {% if no_stats_msg %}
+    Statistics: <br>
+    🔹 {{ no_stats_msg }} <br><br>
+    {% elif stats %}
     Statistics: <br>
     🔹 Total = {{ stats.total_mangas }} <br>
     🔹 <a href="{{ request.path }}all_read" id="stats">All Read</a> = {{ stats.read_mangas }}/{{ stats.total_mangas }} <br>
