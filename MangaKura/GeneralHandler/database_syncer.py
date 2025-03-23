@@ -20,7 +20,7 @@ def get_column_names_of_a_model(model=None) -> list[str]:
 
 
 def get_dict_of_a_model_in_db(model : models.Model = None, 
-                              primary_key : list[str] = None,
+                              #primary_key : list[str] = None,
                               as_json : bool = False,
                               using_database : str = None,
     ) -> tuple[str , dict[tuple[list[str] , list[str]]]]:
@@ -64,8 +64,8 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
     if not issubclass(model, models.Model):
         raise Exception("Please pass a model.")
     
-    if not isinstance(primary_key, list):
-        raise Exception("Please pass a list.")
+    #if not isinstance(primary_key, list):
+    #    raise Exception("Please pass a list.")
 
     if not isinstance(as_json, bool) or not isinstance(using_database, str):
         raise Exception("Something went wrong.")
@@ -94,15 +94,12 @@ def get_dict_of_a_model_in_db(model : models.Model = None,
         
         key = f"OBJ{i}"
         i += 1
-        # All useless...
-        ''' 
-        for k_name in primary_key:
-            value = entry[k_name]
-            key += k_name+KEYVALUE_SEPARATOR+str(value)+KEYKEY_SEPARATOR
-
-
-        key = key[:-len(KEYKEY_SEPARATOR)] # Remove the last separator
-        '''
+        
+        # All useless... 
+        #for k_name in primary_key:
+        #    value = entry[k_name]
+        #    key += k_name+KEYVALUE_SEPARATOR+str(value)+KEYKEY_SEPARATOR
+        #key = key[:-len(KEYKEY_SEPARATOR)] # Remove the last separator
 
         all_items_dict[key] = entry
 
