@@ -12,6 +12,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import manage
+
+# =====================================================
+# APPLICATION SETTINGS
+# =====================================================
+
+# manage.py is the first to launch, and check if I am on phone.
+# For my personal use, I launch it on phone by launching manage.py without args.
+LAZY = os.getenv("IS_MOBILE") == "1" # If on mobile, skips default heavy calculations like manga stats. 
+
+
+# =====================================================
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
