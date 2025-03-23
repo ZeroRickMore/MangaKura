@@ -7,7 +7,7 @@
     <ul>
         {% for wishlist_item in user_wishlist %}
             <li id="centralized-li">
-                <a href="{% url 'wishlist_item_detail' wishlist_item_id=wishlist_item.id %}">{{ wishlist_item.title }}</a>
+                <a href="{% url 'view_wishlist_item' wishlist_item_id=wishlist_item.id %}">{{ wishlist_item.title }}</a>
 
                 <!-- Display Images -->
                 <div class="variant-images">

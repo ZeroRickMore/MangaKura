@@ -28,7 +28,7 @@ urlpatterns = [
     # ============================== WISHLIST STUFF ==============================
 
     path('insertWishlistItem/', views.insert_wishlist_item, name='insert_wishlist_item'),
-    path('wishlist_item_detail/<int:wishlist_item_id>/', views.wishlist_item_detail, name='wishlist_item_detail'),
+    path('view_wishlist_item/<int:wishlist_item_id>/', views.view_wishlist_item, name='view_wishlist_item'),
     path('wishlist', views.view_wishlist, name='view_wishlist'),
     path('wishlist_item/<int:wishlist_item_id>/edit/', views.edit_wishlist_item, name='edit_wishlist_item'),
     path('wishlist_item/<int:wishlist_item_id>/delete/', views.delete_wishlist_item, name='delete_wishlist_item'),
