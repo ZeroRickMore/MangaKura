@@ -120,7 +120,7 @@ def insert_variant(request):
                 for image in images:
                     VariantImage.objects.create(variant=instance, image=image)  # Save each image
 
-            return redirect('variant_detail', variant_id=instance.id)
+            return redirect('view_variant', variant_id=instance.id)
 
         else:
             print("\n Validation failed. Fix the above errors.")
@@ -184,7 +184,7 @@ def insert_wishlist_item(request):
 # ═══════════════════════════════════════════════════════════════════════════════════════════
 
 @login_required
-def variant_detail(request, variant_id):
+def view_variant(request, variant_id):
     # Fetch the saved UserToVariant instance by ID
     variant = get_object_or_404(UserToVariant, id=variant_id, user=request.user)
     variant.description = format_html('<br><br>' + variant.description.replace('\n', '<br>'))
@@ -193,7 +193,7 @@ def variant_detail(request, variant_id):
     images = VariantImage.objects.filter(variant=variant)
 
     # Render the data in the template
-    return render(request, 'variant_detail.html', {
+    return render(request, 'view_variant.html', {
         'variant': variant,
         'images': images,
         'copies_sold': variant.copies_sold,  # Assuming it's stored as JSON
@@ -796,7 +796,7 @@ def edit_variant(request, variant_id):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            return redirect('variant_detail', variant_id=variant.id)
+            return redirect('view_variant', variant_id=variant.id)
     else:
         form = UserToVariantForm(instance=variant)
         formset = VariantImageFormSet(instance=variant)

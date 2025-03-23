@@ -9,7 +9,7 @@
                     <li><a href="{% url 'manga_detail' item.id %}">{{ item.manga_title }}</a> (Manga)</li>
                 {% elif item.variant_title %}
                 <li>
-                    <a href="{% url 'variant_detail' item.id %}">{{ item.variant_title }}</a> (Variant)
+                    <a href="{% url 'view_variant' item.id %}">{{ item.variant_title }}</a> (Variant)
                     
                     <!-- Display Images -->
                     <div class="variant-images">

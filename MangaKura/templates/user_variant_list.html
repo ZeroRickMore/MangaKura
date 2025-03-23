@@ -19,7 +19,7 @@
     <ul>
         {% for variant in user_variants %}
             <li id="centralized-li">
-                <a href="{% url 'variant_detail' variant_id=variant.id %}">{{ variant.variant_title }}</a>
+                <a href="{% url 'view_variant' variant_id=variant.id %}">{{ variant.variant_title }}</a>
 
                 <!-- Display Images -->
                 <div class="variant-images">

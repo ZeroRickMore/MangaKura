@@ -19,7 +19,7 @@ urlpatterns = [
     # ============================== VARIANT STUFF ==============================
 
     path('insertVariant/', views.insert_variant, name='insert_variant'),
-    path('variant_detail/<int:variant_id>/', views.variant_detail, name='variant_detail'),
+    path('view_variant/<int:variant_id>/', views.view_variant, name='view_variant'),
     path('view_variant_list/', views.view_variant_list, name='view_variant_list'),
     path('variant/<int:variant_id>/edit/', views.edit_variant, name='edit_variant'),
     path('variant/<int:variant_id>/delete/', views.delete_variant, name='delete_variant'),
