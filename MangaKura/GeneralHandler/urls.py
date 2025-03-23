@@ -4,6 +4,7 @@ from . import views
 from . import extra_functions
 
 urlpatterns = [
+
     path('search/<str:category>/', views.search_view, name='search'),
 
     # ============================== MANGA STUFF ==============================
@@ -13,7 +14,7 @@ urlpatterns = [
     path('viewManga/', views.view_manga, name='view_manga'),
     path('manga/<int:manga_id>/edit/', views.edit_manga, name='edit_manga'),
     path('manga/<int:manga_id>/delete/', views.delete_manga, name='delete_manga'),
-    path('viewManga/sortBy/', views.view_mangas, name='view_mangas'),
+    path('viewManga/<str:view_criteria>', views.view_mangas_with_criteria, name='view_mangas_with_criteria'),
 
     # ============================== VARIANT STUFF ==============================
 
@@ -22,7 +23,6 @@ urlpatterns = [
     path('viewVariant/', views.view_variant, name='view_variant'),
     path('variant/<int:variant_id>/edit/', views.edit_variant, name='edit_variant'),
     path('variant/<int:variant_id>/delete/', views.delete_variant, name='delete_variant'),
-    path('viewVariant/sortBy/', views.view_variants, name='view_variants'),
     path('media/variant_images/<str:image_path>/', views.serve_protected_variant_image, name='serve_protected_variant_image'),
 
     # ============================== WISHLIST STUFF ==============================
@@ -37,16 +37,9 @@ urlpatterns = [
     # ============================== EXTRA REST API STUFF ========================
 
     path('apis', extra_functions.apis),
-    path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs)
-
+    path('api/recalculate_own_manga_costs', extra_functions.recalculate_own_manga_costs),
+    path('api/cleanup_unused_images', extra_functions.cleanup_unused_images),
+    path('api/change_LAZY_setting', extra_functions.change_LAZY_setting),
+    path('api/create_user_extra_infos_empty_entry_if_not_exists', extra_functions.create_user_extra_infos_empty_entry_if_not_exists),
+    path('api/execute_sql_raw_query_on_db', extra_functions.execute_sql_raw_query_on_db),
 ]
-
-
-
-
-#from django.conf import settings
-#from django.conf.urls.static import static
-
-# Serve media files in development (only works if DEBUG=True)
-# if settings.DEBUG:
-#    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
