@@ -3,17 +3,76 @@ from .models import UserToManga, UserToVariant, VariantImage, UserToWishlistItem
 from django.utils.html import format_html
 from django.forms import inlineformset_factory
 
+
 class MangaForm(forms.ModelForm):
     class Meta:
         model = UserToManga
-        fields = ['manga_title', 'animeclick_url', 'single_volume_price', 'whole_series_price', 'description', 'owned_volumes', 'all_read', 'completed', 'all_published', 'physical_position', 'volume_doubles']
+
+        fields = ['manga_title', 'animeclick_url', 'editor', 'single_volume_price', 'whole_series_price', 'description', 'owned_volumes', 'all_read', 'completed', 'all_published', 'physical_position', 'volume_doubles']
+
         labels = {
             'completed': 'All bought',
         }
+
         help_texts = {
-            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
-            'single_volume_price' : format_html('Da usare solo se si elencano i volumi nel formato 1-3, 5, 10-15.\nSe si vuole un controllo manuale, lasciare questo a zero, e\ninserire il totale in Whole Series Price.')
+            'editor' : format_html('Inserisci uno dei seguenti.\n'.replace('\n', '<br>')),
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n⟐ Baule ⟐\n⟐ Mensola sopra PC 1/2 ⟐\n⟐ Libreria nera mensola 1/2/3/4/5 ⟐\n⟐ Mensola sopra termosifone 1/2/3 ⟐\n⟐ Scaffale pianoforte sx/dx 1/2 ⟐\n⟐ Mensola sopra il letto ⟐\n⟐ Armadio del letto ⟐\n⟐ Mobile della scrivania 1/2/3 ⟐'.replace('\n', '<br>')),
+            'single_volume_price' : format_html('Da usare solo se si elencano i volumi nel formato 1-3, 5, 10-15.\nSe si vuole un controllo manuale, lasciare questo a zero, e\ninserire il totale in Whole Series Price.'.replace('\n', '<br>'))
         }
+
+
+class UserToVariantForm(forms.ModelForm):
+    copies_sold = forms.CharField(widget=forms.HiddenInput(), required=False)  # Hidden field for storing JSON
+    useful_links = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter useful links, one per line.")
+
+    stock_price = forms.FloatField(required=False, label="Stock Price")
+    current_selling_price = forms.FloatField(required=False, label="Current Selling Price")
+
+    class Meta:
+        model = UserToVariant
+
+        fields = [
+            'variant_title', 'related_manga_title', 'description', 'stock_price', 
+            'current_selling_price', 'physical_position', 'number_of_owned_copies', 
+            'vinted_description', 'to_sell'
+        ]
+
+        help_texts = {
+            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n⟐ Baule ⟐\n⟐ Mensola sopra PC 1/2 ⟐\n⟐ Libreria nera mensola 1/2/3/4/5 ⟐\n⟐ Mensola sopra termosifone 1/2/3 ⟐\n⟐ Scaffale pianoforte sx/dx 1/2 ⟐\n⟐ Mensola sopra il letto ⟐\n⟐ Armadio del letto ⟐\n⟐ Mobile della scrivania 1/2/3 ⟐'.replace('\n', '<br>')),
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Initialize with one pair by default
+        self.copies_sold_forms = [CopiesSoldForm(prefix='copy_0')]
+        if self.instance and self.instance.useful_links:
+            # Convert list to a string (one per line)
+            self.fields['useful_links'].initial = "\n".join(self.instance.useful_links)
+
+
+    def clean_useful_links(self):
+        data = self.cleaned_data['useful_links']
+        if data:
+            return [link.strip() for link in data.splitlines() if link.strip()]
+        return []
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        useful_links_data = self.cleaned_data['useful_links']
+        instance.useful_links = useful_links_data  # Assign cleaned useful_links to the instance
+
+        if commit:
+            instance.save()
+
+        # Handle saving each uploaded image
+        if 'images' in self.cleaned_data and self.cleaned_data['images']:
+            images = self.cleaned_data['images']
+            for image in images:
+                VariantImage.objects.create(variant=instance, image=image)
+
+        return instance
 
 class CopiesSoldForm(forms.Form):
     price = forms.CharField(label="Price when sold", required=False)  # Will store a JSON string of prices
@@ -50,58 +109,6 @@ class CopiesSoldForm(forms.Form):
 
         return cleaned_data
 
-class UserToVariantForm(forms.ModelForm):
-    copies_sold = forms.CharField(widget=forms.HiddenInput(), required=False)  # Hidden field for storing JSON
-    useful_links = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter useful links, one per line.")
-
-    stock_price = forms.FloatField(required=False, label="Stock Price")
-    current_selling_price = forms.FloatField(required=False, label="Current Selling Price")
-
-    class Meta:
-        model = UserToVariant
-        fields = [
-            'variant_title', 'related_manga_title', 'description', 'stock_price', 
-            'current_selling_price', 'physical_position', 'number_of_owned_copies', 
-            'vinted_description', 'to_sell'
-        ]
-        help_texts = {
-            'physical_position': format_html('Inserisci uno dei seguenti, e poi una pipe "|".\n- Baule\n- Mensola sopra PC 1/2\n- Libreria nera mensola 1/2/3/4/5\n- Mensola sopra termosifone 1/2/3\n- Scaffale pianoforte sx/dx 1/2\n- Mensola sopra il letto\n- Armadio del letto\n- Mobile della scrivania 1/2/3'.replace('\n', '<br>')),
-        }
-
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Initialize with one pair by default
-        self.copies_sold_forms = [CopiesSoldForm(prefix='copy_0')]
-        if self.instance and self.instance.useful_links:
-            # Convert list to a string (one per line)
-            self.fields['useful_links'].initial = "\n".join(self.instance.useful_links)
-
-
-    def clean_useful_links(self):
-        data = self.cleaned_data['useful_links']
-        if data:
-            return [link.strip() for link in data.splitlines() if link.strip()]
-        return []
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-
-        useful_links_data = self.cleaned_data['useful_links']
-        instance.useful_links = useful_links_data  # Assign cleaned useful_links to the instance
-
-        if commit:
-            instance.save()
-
-        # Handle saving each uploaded image
-        if 'images' in self.cleaned_data and self.cleaned_data['images']:
-            images = self.cleaned_data['images']
-            for image in images:
-                VariantImage.objects.create(variant=instance, image=image)
-
-        return instance
-
-
 class VariantImageForm(forms.ModelForm):
     class Meta:
         model = VariantImage
@@ -110,7 +117,6 @@ class VariantImageForm(forms.ModelForm):
 VariantImageFormSet = inlineformset_factory(
     UserToVariant, VariantImage, form=VariantImageForm, extra=3, can_delete=True
 )
-
 
 
 class WishlistItemForm(forms.ModelForm):
@@ -122,6 +128,7 @@ class WishlistItemForm(forms.ModelForm):
 
     class Meta:
         model = UserToWishlistItem
+
         fields = [
             'title', 'price', 'release_date', 'description', 'copies_to_buy'
         ]
@@ -157,7 +164,6 @@ class WishlistItemForm(forms.ModelForm):
                 WishlistImage.objects.create(wishlist_item=instance, image=image)
 
         return instance
-    
 
 class WishlistImageForm(forms.ModelForm):
     class Meta:
