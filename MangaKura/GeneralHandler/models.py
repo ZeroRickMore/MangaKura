@@ -85,6 +85,7 @@ class UserToWishlistItem(models.Model):
     description = models.TextField(blank=True, null=True)
     copies_to_buy = models.IntegerField(blank=True, null=True)
     useful_links = models.JSONField(default=list)
+    importance_rating = models.IntegerField(default=0)
     
     class Meta:
         # The key is the ID for better django db handling, but I do not want duplicates of this kind.

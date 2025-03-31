@@ -130,7 +130,7 @@ class WishlistItemForm(forms.ModelForm):
         model = UserToWishlistItem
 
         fields = [
-            'title', 'price', 'release_date', 'description', 'copies_to_buy'
+            'title', 'importance_rating', 'price', 'release_date', 'description', 'copies_to_buy'
         ]
 
     useful_links = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter useful links, one per line.")
