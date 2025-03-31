@@ -514,7 +514,7 @@ def view_variant_list(request):
 
 @login_required
 def view_wishlist(request):
-    user_wishlist = UserToWishlistItem.objects.filter(user=request.user).order_by('title').order_by('importance_rating').order_by('release_date').prefetch_related('images')
+    user_wishlist = UserToWishlistItem.objects.filter(user=request.user).order_by('title').order_by('importance_rating').order_by('-release_date').prefetch_related('images')
     return render(request, 'user_wishlist.html', {'user_wishlist': user_wishlist})
 
 
